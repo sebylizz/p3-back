@@ -12,12 +12,22 @@ import java.util.List;
 public class GreetingResource {
 
     @Inject
-    PersonRepository repository;
+    PersonRepository personRepository;
+
+    @Inject
+    ProductRepository productRepository;
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public List<Person> list() {
-        return repository.listAll();
+    @Path("/persons")
+    public List<Person> listPersons() {
+        return personRepository.listAll();
     }
 
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/products")
+    public List<Product> listProducts() {
+        return productRepository.listAll();
+    }
 }
