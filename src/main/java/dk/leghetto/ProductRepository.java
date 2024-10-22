@@ -2,14 +2,17 @@ package dk.leghetto;
 
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.ws.rs.NotFoundException;
 
 @ApplicationScoped
 public class ProductRepository implements PanacheRepository<Product> {
-    public void add() {
-        Product p = new Product();
-        p.setSize("HUGE");
-        p.setPrice(999);
-        p.setType("NIG");
+    public void add(String name, String size, Integer price) {
+        Product p = new Product(name, size, price);
         persist(p);
+    }
+
+    public void delete(Long id) throws NotFoundException {
+        Product p = findById(id);
+        delete(p);
     }
 }

@@ -9,8 +9,8 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "type")
-    private String type;
+    @Column(name = "name")
+    private String name;
 
     @Column(name = "size")
     private String size;
@@ -18,16 +18,29 @@ public class Product {
     @Column(name = "price")
     private int price;
 
+    public Product() {
+    }
+
+    public Product(String name, String size, int price) {
+        this.name = name;
+        this.size = size;
+        this.price = price;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public Long getId() {
         return id;
     }
 
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getSize() {
@@ -48,6 +61,6 @@ public class Product {
 
     @Override
     public String toString() {
-        return type + size + price;
+        return name + size + price;
     }
 }
