@@ -18,6 +18,9 @@ public class Product {
     @Column(name = "price")
     private int price;
 
+    @Column(name = "image")
+    private String image;
+
     public Product() {
     }
 
@@ -57,5 +60,9 @@ public class Product {
 
     public void setPrice(int price) {
         this.price = price;
+    }
+
+    public String getImage() {
+        return image;
     }
 }
