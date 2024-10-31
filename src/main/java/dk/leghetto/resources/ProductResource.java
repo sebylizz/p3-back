@@ -1,4 +1,4 @@
-package dk.leghetto;
+package dk.leghetto.resources;
 
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -9,6 +9,9 @@ import jakarta.ws.rs.core.Response;
 import java.util.List;
 
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+
+import dk.leghetto.Product;
+import dk.leghetto.ProductRepository;
 
 @Path("/products")
 public class ProductResource {
