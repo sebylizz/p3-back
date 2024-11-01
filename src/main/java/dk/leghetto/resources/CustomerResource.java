@@ -8,6 +8,7 @@ import jakarta.ws.rs.core.Response;
 
 import java.util.List;
 
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
@@ -40,5 +41,21 @@ public class CustomerResource {
                 customerRequest.getEmail(),
                 customerRequest.getPassword());
         return Response.ok().build();
+    }
+
+    @GET
+    @Transactional
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Path("/checklogin")
+    public Response login(
+            @Parameter(description = "Email address", required = true) @QueryParam("email") String email,
+            @Parameter(description = "Password", required = true) @QueryParam("password") String password) {
+        Customer c = customerRepository.findByEmail(email);
+        if (c != null) {
+            if (c.matchPsw(password)) {
+                return Response.ok().build();
+            }
+        }
+        return Response.status(404).build();
     }
 }
