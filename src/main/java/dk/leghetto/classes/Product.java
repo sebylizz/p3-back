@@ -1,4 +1,4 @@
-package dk.leghetto;
+package dk.leghetto.classes;
 
 import jakarta.persistence.*;
 

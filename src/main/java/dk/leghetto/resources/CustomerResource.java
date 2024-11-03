@@ -1,21 +1,23 @@
 package dk.leghetto.resources;
 
-import jakarta.inject.Inject;
-import jakarta.transaction.Transactional;
-import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-
 import java.util.List;
 
-import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
-import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 
-import dk.leghetto.Customer;
-import dk.leghetto.CustomerRepository;
+import dk.leghetto.classes.Customer;
+import dk.leghetto.classes.CustomerRepository;
 import dk.leghetto.classes.CustomerRequest;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 @Path("/customers")
 public class CustomerResource {
@@ -41,21 +43,5 @@ public class CustomerResource {
                 customerRequest.getEmail(),
                 customerRequest.getPassword());
         return Response.ok().build();
-    }
-
-    @GET
-    @Transactional
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Path("/checklogin")
-    public Response login(
-            @Parameter(description = "Email address", required = true) @QueryParam("email") String email,
-            @Parameter(description = "Password", required = true) @QueryParam("password") String password) {
-        Customer c = customerRepository.findByEmail(email);
-        if (c != null) {
-            if (c.matchPsw(password)) {
-                return Response.ok().build();
-            }
-        }
-        return Response.status(404).build();
     }
 }

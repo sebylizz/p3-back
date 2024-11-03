@@ -1,4 +1,4 @@
-package dk.leghetto;
+package dk.leghetto.classes;
 
 import io.quarkus.elytron.security.common.BcryptUtil;
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
@@ -15,7 +15,7 @@ import jakarta.persistence.Table;
 
 @Entity
 @UserDefinition
-@Table(name = "users", schema = "dev")
+@Table(name = "users")
 public class Customer extends PanacheEntityBase {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -89,7 +89,20 @@ public class Customer extends PanacheEntityBase {
         return newsletter;
     }
 
-    public String getRoles() {
+    public String getRole() {
         return role;
+    }
+
+    @Override
+    public String toString() {
+        return "Customer{" +
+                "id=" + id +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", telephone=" + telephone +
+                ", email='" + email + '\'' +
+                ", newsletter=" + newsletter +
+                ", role='" + role + '\'' +
+                '}';
     }
 }

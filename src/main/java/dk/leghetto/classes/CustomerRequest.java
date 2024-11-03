@@ -2,21 +2,23 @@ package dk.leghetto.classes;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 @Schema(description = "Request body for adding a new customer")
 public class CustomerRequest {
-    @Schema(description = "First name of the customer", example = "John", required = true)
+
+    @JsonProperty
     private String firstName;
 
-    @Schema(description = "Last name of the customer", example = "Doe", required = true)
+    @JsonProperty
     private String lastName;
 
-    @Schema(description = "Email address of the customer", example = "johndoe@example.com", required = true)
+    @JsonProperty
     private String email;
 
-    @Schema(description = "Password for the customer account", example = "securepassword123", required = true)
+    @JsonProperty
     private String password;
 
-    // Getters and setters
     public String getFirstName() { return firstName; }
     public void setFirstName(String firstName) { this.firstName = firstName; }
 
