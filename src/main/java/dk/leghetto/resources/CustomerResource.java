@@ -1,7 +1,9 @@
 package dk.leghetto.resources;
 
+import java.nio.channels.SelectableChannel;
 import java.util.List;
 
+import dk.leghetto.services.MailService;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
@@ -23,6 +25,8 @@ import jakarta.ws.rs.core.Response;
 public class CustomerResource {
     @Inject
     CustomerRepository customerRepository;
+    @Inject
+    MailService mailService;
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -37,11 +41,19 @@ public class CustomerResource {
     @Path("/addcustomer")
     public Response addCustomer(
             @RequestBody(description = "Customer details", required = true, content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = CustomerRequest.class))) CustomerRequest customerRequest) {
+
+        if (customerRepository.findByEmail(customerRequest.getEmail()) != null) {
+            return Response.status(Response.Status.CONFLICT)
+                           .entity("email already in use")
+                           .build();
+        }
+
         customerRepository.add(
                 customerRequest.getFirstName(),
                 customerRequest.getLastName(),
                 customerRequest.getEmail(),
                 customerRequest.getPassword());
+        mailService.sendMail(customerRequest.getEmail(), "Welcome to Leghetto", "We are pleased to welcome you in Leghetto " + customerRequest.getFirstName() + " with this emailaddress: " + customerRequest.getEmail() + "\nPlease click this link to verify your account: ");
         return Response.ok().build();
     }
 }

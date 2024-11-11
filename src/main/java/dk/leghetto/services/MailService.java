@@ -11,6 +11,7 @@ public class MailService {
     Mailer mailer;
 
     public void sendMail(String to, String subject, String body) {
+
         mailer.send(Mail.withText(to, subject, body));
     }
 }
