@@ -2,6 +2,9 @@ package dk.leghetto.resources;
 
 import java.util.List;
 
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.SecurityContext;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
@@ -21,6 +24,15 @@ import jakarta.ws.rs.core.Response;
 
 @Path("/customers")
 public class CustomerResource {
+    @GET
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/getsinglecustomer")
+    @RolesAllowed("user")
+    public Response customer(@Context SecurityContext ctx) {
+        return Response.ok(customerRepository.findByEmail(ctx.getUserPrincipal().getName())).build();
+    }
+
     @Inject
     CustomerRepository customerRepository;
 
