@@ -6,7 +6,7 @@ import jakarta.ws.rs.NotFoundException;
 
 @ApplicationScoped
 public class ProductRepository implements PanacheRepository<Product> {
-    public void add(String name, String size, Integer price) {
+    public void add(String name, String size, Double price) {
         Product p = new Product(name, size, price);
         persist(p);
     }
