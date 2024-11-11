@@ -39,7 +39,7 @@ public class ProductResource {
     public Response addProduct(
             @Parameter(description = "Product name", required = true) @QueryParam("name") String name,
             @Parameter(description = "Size", required = true) @DefaultValue("Onesize") @QueryParam("size") String size,
-            @Parameter(description = "Price", required = true) @QueryParam("price") Integer price) {
+            @Parameter(description = "Price", required = true) @QueryParam("price") Double price) {
         productRepository.add(name, size, price);
         return Response.ok().build();
     }
