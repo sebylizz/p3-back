@@ -3,22 +3,18 @@ package dk.leghetto.resources;
 import java.util.Collections;
 import java.util.List;
 
-import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
-
 import dk.leghetto.classes.Product;
 import dk.leghetto.classes.ProductRepository;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
-import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
@@ -50,10 +46,13 @@ public class ProductResource {
     @Transactional
     @Consumes(MediaType.APPLICATION_JSON)
     @Path("/addproduct")
+    // Der skal laves schema hertil
     public Response addProduct(Product product) {
         if (product.getPrice() == null) {
             return Response.status(400).entity("Price cannot be null").build();
         }
+        //Flere checks?
+        productRepository.persist(product);
         productRepository.persist(product);  // Persist the entire product object
         return Response.ok(Collections.singletonMap("id", product.getId())).build();
     }
@@ -63,6 +62,7 @@ public class ProductResource {
     @Transactional
     @Consumes(MediaType.APPLICATION_JSON)
     @Path("/deleteproduct/{id}")
+    // Er det en god ide at have som pathparam?
     public Response deleteProduct(@PathParam("id") Long id) {
         try {
             productRepository.delete(id);
@@ -76,6 +76,7 @@ public class ProductResource {
     @Transactional
     @Consumes(MediaType.APPLICATION_JSON)
     @Path("/deleteproducts") 
+    // JSON body?
     public Response deleteProducts(List<Long> ids) {
         try {
             for (Long id : ids) {
@@ -91,6 +92,7 @@ public class ProductResource {
     @Transactional
     @Consumes(MediaType.APPLICATION_JSON)
     @Path("/updateproduct/{id}")
+    // Schema
     public Response updateProduct(
             @PathParam("id") Long id, Product product) {
         
@@ -107,6 +109,7 @@ public class ProductResource {
         existingProduct.setQuantity(product.getQuantity());
         existingProduct.setMainImage(product.getMainImage());
     
+        productRepository.persist(existingProduct);
         // Persist the updated product
         productRepository.persist(existingProduct); // Save the updated product to the database
         
