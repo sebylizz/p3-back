@@ -57,14 +57,14 @@ public class CustomerResource {
 
         if (customerRepository.findByEmail(customerRequest.getEmail()) != null) {
             return Response.status(Response.Status.CONFLICT)
-                           .entity("email already in use")
-                           .build();
+                    .entity("email already in use")
+                    .build();
         }
 
         String verificationToken = UUID.randomUUID().toString();
-        String verificationLink = "http://localhost:8080/customers/verify?token=" + verificationToken;
+        String verificationLink = "http://localhost:3000/verification?token=" + verificationToken;
 
-                customerRepository.add(
+        customerRepository.add(
                 customerRequest.getFirstName(),
                 customerRequest.getLastName(),
                 customerRequest.getEmail(),
