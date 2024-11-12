@@ -16,7 +16,8 @@ public class Product {
     private String size;
 
     @Column(name = "price")
-    private Integer price;
+    private Double price;
+
 
     @Column(name = "image")
     private String image;
@@ -30,7 +31,8 @@ public class Product {
     public Product() {
     }
 
-    public Product(String name, String size, int price, int quantity, String image, String mainImage) {
+
+    public Product(String name, String size, Double price, int quantity, String image, String mainImage) {
         this.name = name;
         this.size = size;
         this.price = price;
@@ -63,11 +65,12 @@ public class Product {
         this.size = size;
     }
 
-    public Integer getPrice() {
+
+    public Double getPrice() {
         return price;
     }
 
-    public void setPrice(int price) {
+    public void setPrice(Double price) {
         this.price = price;
     }
 
