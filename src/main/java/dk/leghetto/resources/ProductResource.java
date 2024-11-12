@@ -30,6 +30,18 @@ public class ProductResource {
         return productRepository.listAll();
     }
 
+    // @POST
+    // @Transactional
+    // @Consumes(MediaType.APPLICATION_JSON)
+    // @Path("/addproduct")
+    // public Response addProduct(
+    //         @Parameter(description = "Product name", required = true) @QueryParam("name") String name,
+    //         @Parameter(description = "Size", required = true) @DefaultValue("Onesize") @QueryParam("size") String size,
+    //         @Parameter(description = "Price", required = true) @QueryParam("price") Integer price) {
+    //     productRepository.add(name, size, price);
+    //     return Response.ok().build();
+    // }
+
     @POST
     @Transactional
     @Consumes(MediaType.APPLICATION_JSON)
@@ -41,8 +53,10 @@ public class ProductResource {
         }
         //Flere checks?
         productRepository.persist(product);
+        productRepository.persist(product);  // Persist the entire product object
         return Response.ok(Collections.singletonMap("id", product.getId())).build();
     }
+    
 
     @DELETE
     @Transactional
@@ -87,6 +101,7 @@ public class ProductResource {
             return Response.status(404).build();
         }
         
+        // Update product fields with the values from the provided product object
         existingProduct.setName(product.getName());
         existingProduct.setSize(product.getSize());
         existingProduct.setPrice(product.getPrice());
@@ -95,6 +110,8 @@ public class ProductResource {
         existingProduct.setMainImage(product.getMainImage());
     
         productRepository.persist(existingProduct);
+        // Persist the updated product
+        productRepository.persist(existingProduct); // Save the updated product to the database
         
         return Response.ok().build();
     }
