@@ -78,7 +78,7 @@ public class CustomerResource {
 
     @GET
     @Transactional
-    @Produces(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.TEXT_HTML)
     @Path("/verify")
     public Response verifyAccount(@QueryParam("token") String token) {
         Customer customer = customerRepository.findByVerificationToken(token);
@@ -92,6 +92,12 @@ public class CustomerResource {
         customer.setVerified(true);
         customerRepository.persist(customer);
 
-        return Response.ok("Verified").build();
+        String redirectHtml = "<html>" +
+                "<body onload=\"window.location.href='http://localhost:3000/'\">" +
+                "<p>Redirecting to homepage...</p>" +
+                "</body>" +
+                "</html>";
+
+        return Response.ok(redirectHtml).build();
     }
 }
