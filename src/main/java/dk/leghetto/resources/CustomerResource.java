@@ -42,6 +42,7 @@ public class CustomerResource {
 
     @Inject
     CustomerRepository customerRepository;
+
     @Inject
     MailService mailService;
 
