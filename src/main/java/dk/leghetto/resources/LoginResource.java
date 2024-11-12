@@ -9,6 +9,7 @@ import dk.leghetto.classes.Customer;
 import dk.leghetto.classes.CustomerRepository;
 import dk.leghetto.classes.ForgotPasswordRequest;
 import dk.leghetto.classes.LoginRequest;
+import dk.leghetto.classes.Token;
 import dk.leghetto.classes.TokenGenerator;
 import dk.leghetto.services.MailService;
 import io.quarkus.elytron.security.common.BcryptUtil;
@@ -52,9 +53,22 @@ public class LoginResource {
         Customer customer = customerRepository.findByEmail(email);
         if (customer != null && BcryptUtil.matches(password, customer.getPasswordHash())) {
             String token = tokenGenerator.generateToken(email);
+
             return Response.ok().header("Set-Cookie", "token="+token).build();
         }
         return Response.status(Response.Status.UNAUTHORIZED).entity("Invalid email or password").build();
+    }
+
+    @POST
+    @Path("/refresh")
+    @Transactional
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @RolesAllowed("user")
+    public Response refresh() {
+        String email = jwtWebToken.getName();
+        String token = tokenGenerator.generateToken(email);
+        return Response.ok().entity(new Token(token)).build();
     }
 
     @POST
