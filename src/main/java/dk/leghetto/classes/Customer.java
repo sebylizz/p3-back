@@ -12,6 +12,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.transaction.Transactional;
+import jakarta.ws.rs.NotFoundException;
 
 @Entity
 @UserDefinition
@@ -91,6 +93,33 @@ public class Customer extends PanacheEntityBase {
 
     public String getRole() {
         return role;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+    
+    @Transactional
+    public static Customer updateCustomer(Long id, String firstName, String lastName, String email) {
+        Customer customer = findById(id);
+        if (customer == null) {
+            throw new NotFoundException("Customer not found");
+        }
+
+        customer.setFirstName(firstName);
+        customer.setLastName(lastName);
+        customer.setEmail(email);
+
+        customer.persist(); // Automatically updates or persists the entity
+        return customer;
     }
 
     @Override

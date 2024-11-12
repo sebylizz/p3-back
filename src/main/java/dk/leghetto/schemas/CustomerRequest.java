@@ -1,4 +1,4 @@
-package dk.leghetto.classes;
+package dk.leghetto.schemas;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
