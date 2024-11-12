@@ -6,8 +6,8 @@ import jakarta.ws.rs.NotFoundException;
 
 @ApplicationScoped
 public class CustomerRepository implements PanacheRepository<Customer> {
-    public void add(String first_name, String last_name, String email, String password) {
-        Customer p = new Customer(first_name, last_name, email, password);
+    public void add(String first_name, String last_name, String email, String password, String verificationToken, Boolean verified) {
+        Customer p = new Customer(first_name, last_name, email, password, verificationToken, verified);
         persist(p);
     }
 
@@ -18,5 +18,9 @@ public class CustomerRepository implements PanacheRepository<Customer> {
 
     public Customer findByEmail(String email) {
         return find("email", email).firstResult();
+    }
+
+    public Customer findByVerificationToken(String token) {
+        return find("verificationToken", token).firstResult();
     }
 }

@@ -2,8 +2,10 @@ package dk.leghetto.resources;
 
 import java.nio.channels.SelectableChannel;
 import java.util.List;
+import java.util.UUID;
 
 import dk.leghetto.services.MailService;
+import jakarta.ws.rs.*;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
@@ -13,11 +15,6 @@ import dk.leghetto.classes.CustomerRepository;
 import dk.leghetto.classes.CustomerRequest;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
@@ -48,12 +45,37 @@ public class CustomerResource {
                            .build();
         }
 
-        customerRepository.add(
+        String verificationToken = UUID.randomUUID().toString();
+        String verificationLink = "http://localhost:8080/customers/verify?token=" + verificationToken;
+
+                customerRepository.add(
                 customerRequest.getFirstName(),
                 customerRequest.getLastName(),
                 customerRequest.getEmail(),
-                customerRequest.getPassword());
-        mailService.sendMail(customerRequest.getEmail(), "Welcome to Leghetto", "We are pleased to welcome you in Leghetto " + customerRequest.getFirstName() + " with this emailaddress: " + customerRequest.getEmail() + "\nPlease click this link to verify your account: ");
+                customerRequest.getPassword(),
+                verificationToken,
+                false); //for at sætte verified
+
+        mailService.sendMail(customerRequest.getEmail(), "Welcome to Leghetto", "We are pleased to welcome you in Leghetto " + customerRequest.getFirstName() + " with this emailaddress: " + customerRequest.getEmail() + "\nPlease click this link to verify your account: " + verificationLink);
         return Response.ok().build();
+    }
+
+    @GET
+    @Transactional
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/verify")
+    public Response verifyAccount(@QueryParam("token") String token) {
+        Customer customer = customerRepository.findByVerificationToken(token);
+
+        if (customer == null) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity("Invalid or expired verification token")
+                    .build();
+        }
+
+        customer.setVerified(true);
+        customerRepository.persist(customer);
+
+        return Response.ok("Verified").build();
     }
 }

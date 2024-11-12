@@ -45,16 +45,24 @@ public class Customer extends PanacheEntityBase {
     @Column(name = "role")
     private String role;
 
+    @Column(name = "verification_token")
+    private String verificationToken;
+
+    @Column(name = "verified")
+    private Boolean verified;
+
     public Customer() {
     }
 
-    public Customer(String firstName, String lastName, String email, String password) {
+    public Customer(String firstName, String lastName, String email, String password, String verificationToken, Boolean verified) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
         this.newsletter = false;
         this.password = BcryptUtil.bcryptHash(password);
         this.role = "user";
+        this.verificationToken = verificationToken;
+        this.verified = verified;
     }
 
     public boolean matchPsw(String password) {
@@ -91,6 +99,14 @@ public class Customer extends PanacheEntityBase {
 
     public String getRole() {
         return role;
+    }
+
+    public String verificationToken() { return verificationToken; }
+
+    public Boolean verified() { return verified; }
+
+    public void setVerified(Boolean verified) { //for at ændre verification status efter verification link er trykket
+        this.verified = verified;
     }
 
     @Override
