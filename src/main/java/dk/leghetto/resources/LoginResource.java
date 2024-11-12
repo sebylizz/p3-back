@@ -7,8 +7,11 @@ import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 
 import dk.leghetto.classes.Customer;
 import dk.leghetto.classes.CustomerRepository;
+import dk.leghetto.classes.ForgotPasswordRequest;
 import dk.leghetto.classes.LoginRequest;
+import dk.leghetto.classes.Token;
 import dk.leghetto.classes.TokenGenerator;
+import dk.leghetto.services.MailService;
 import io.quarkus.elytron.security.common.BcryptUtil;
 import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
@@ -32,6 +35,9 @@ public class LoginResource {
     @Inject
     TokenGenerator tokenGenerator;
 
+    @Inject
+    MailService mailService;
+
     @POST
     @Transactional
     @Consumes(MediaType.APPLICATION_JSON)
@@ -47,30 +53,41 @@ public class LoginResource {
         Customer customer = customerRepository.findByEmail(email);
         if (customer != null && BcryptUtil.matches(password, customer.getPasswordHash())) {
             String token = tokenGenerator.generateToken(email);
-            return Response.ok().entity(new LoginResponse(token)).build();
+
+            return Response.ok().header("Set-Cookie", "token="+token).build();
         }
         return Response.status(Response.Status.UNAUTHORIZED).entity("Invalid email or password").build();
     }
 
-    public static class LoginResponse {
-        private String token;
+    @POST
+    @Path("/refresh")
+    @Transactional
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @RolesAllowed("user")
+    public Response refresh() {
+        String email = jwtWebToken.getName();
+        String token = tokenGenerator.generateToken(email);
+        return Response.ok().entity(new Token(token)).build();
+    }
 
-        public LoginResponse(String token) {
-            this.token = token;
+    @POST
+    @Path("/forgot")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response forgotPassword(
+            @RequestBody(description = "Mail of forgetful user", required = true, content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ForgotPasswordRequest.class))) ForgotPasswordRequest forgotPasswordRequest) {
+        String email = forgotPasswordRequest.getEmail();
+        Customer customer = customerRepository.findByEmail(email);
+        if (customer != null) {
+            mailService.sendMail(email, "Forgot password at Leghetto", "Hello Mr. " + customer.getLastName());
         }
-
-        public String getToken() {
-            return token;
-        }
-
-        public void setToken(String token) {
-            this.token = token;
-        }
+        return Response.ok().build();
     }
 
     @Inject
     JsonWebToken jwtWebToken;
 
+    // Everything below is temporary for dev only
     @GET
     @Path("all-allowed")
     @PermitAll
@@ -81,7 +98,7 @@ public class LoginResource {
 
     @GET
     @Path("users-allowed")
-    @RolesAllowed({ "user" })
+    @RolesAllowed("user")
     @Produces(MediaType.TEXT_PLAIN)
     public String usersAllowed(@Context SecurityContext ctx) {
         return getResponse(ctx);
