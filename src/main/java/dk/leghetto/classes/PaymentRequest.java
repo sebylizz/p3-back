@@ -14,7 +14,6 @@ import java.util.ArrayList;
 
 @ApplicationScoped
 public class PaymentRequest {
-
     public void paymentRequest(Order order) throws StripeException {
         Stripe.apiKey = "sk_test_51QA8WbCZh5mI9KbJi0PWYz6XKnbRn1slHQYMrlOpAVG13AJV1HT6kQ9ihNFPbr7uzpmLwIfU6TeXs5m4YOeYFr1U00fKvdltAl";
 
@@ -22,8 +21,6 @@ public class PaymentRequest {
         for (Product product : order.getItems()) {
 
             Long amount = (long)(product.getPrice() * 100);
-
-            System.out.println("Her: " + amount);
 
             PriceCreateParams priceParams =
                     PriceCreateParams

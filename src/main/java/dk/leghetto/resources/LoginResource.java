@@ -59,6 +59,14 @@ public class LoginResource {
         return Response.status(Response.Status.UNAUTHORIZED).entity("Invalid email or password").build();
     }
 
+    @GET
+    @Path("/logout")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response logout() {
+            return Response.ok().header("Set-Cookie", "token=; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Max-Age=0; Path=/;").build();
+    }
+
     @POST
     @Path("/refresh")
     @Transactional
@@ -114,7 +122,6 @@ public class LoginResource {
 
     private String getResponse(SecurityContext ctx) {
         String name = "anon";
-        System.out.println(jwtWebToken.getClaimNames());
         if (jwtWebToken.getClaimNames() != null && jwtWebToken.getClaimNames().contains("upn")) {
             String email = jwtWebToken.getName();
             Customer customer = customerRepository.findByEmail(email);
