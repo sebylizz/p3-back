@@ -1,11 +1,8 @@
 package dk.leghetto.resources;
 
-import java.nio.channels.SelectableChannel;
 import java.util.List;
 import java.util.UUID;
 
-import dk.leghetto.services.MailService;
-import jakarta.ws.rs.*;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
@@ -13,13 +10,32 @@ import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import dk.leghetto.classes.Customer;
 import dk.leghetto.classes.CustomerRepository;
 import dk.leghetto.classes.CustomerRequest;
+import dk.leghetto.services.MailService;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.SecurityContext;
 
 @Path("/customers")
 public class CustomerResource {
+    @GET
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/getsinglecustomer")
+    @RolesAllowed("user")
+    public Response customer(@Context SecurityContext ctx) {
+        return Response.ok(customerRepository.findByEmail(ctx.getUserPrincipal().getName())).build();
+    }
+
     @Inject
     CustomerRepository customerRepository;
     @Inject

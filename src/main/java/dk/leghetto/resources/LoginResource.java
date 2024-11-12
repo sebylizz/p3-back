@@ -53,7 +53,8 @@ public class LoginResource {
         Customer customer = customerRepository.findByEmail(email);
         if (customer != null && BcryptUtil.matches(password, customer.getPasswordHash())) {
             String token = tokenGenerator.generateToken(email);
-            return Response.ok().entity(new Token(token)).build();
+
+            return Response.ok().header("Set-Cookie", "token="+token).build();
         }
         return Response.status(Response.Status.UNAUTHORIZED).entity("Invalid email or password").build();
     }
@@ -97,7 +98,7 @@ public class LoginResource {
 
     @GET
     @Path("users-allowed")
-    @RolesAllowed({ "user" })
+    @RolesAllowed("user")
     @Produces(MediaType.TEXT_PLAIN)
     public String usersAllowed(@Context SecurityContext ctx) {
         return getResponse(ctx);

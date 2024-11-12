@@ -16,18 +16,29 @@ public class Product {
     private String size;
 
     @Column(name = "price")
-    private int price;
+    private Double price;
+
 
     @Column(name = "image")
     private String image;
 
+    @Column(name = "quantity")
+    private Integer quantity;
+
+    @Column(name = "main_image")
+    private String mainImage;
+
     public Product() {
     }
 
-    public Product(String name, String size, int price) {
+
+    public Product(String name, String size, Double price, int quantity, String image, String mainImage) {
         this.name = name;
         this.size = size;
         this.price = price;
+        this.quantity=quantity;
+        this.image=image;
+        this.mainImage=mainImage;
     }
 
     public String getName() {
@@ -54,15 +65,36 @@ public class Product {
         this.size = size;
     }
 
-    public int getPrice() {
+
+    public Double getPrice() {
         return price;
     }
 
-    public void setPrice(int price) {
+    public void setPrice(Double price) {
         this.price = price;
     }
 
     public String getImage() {
         return image;
     }
+
+    public void setImage(String image) {
+        this.image = image;
+    }
+
+    public Integer getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
+    public String getMainImage() {
+        return mainImage;
+    }
+
+    public void setMainImage(String mainImage) {
+        this.mainImage = mainImage;
+    }
+
 }
