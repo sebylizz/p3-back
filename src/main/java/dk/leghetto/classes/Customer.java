@@ -128,6 +128,7 @@ public class Customer extends PanacheEntityBase {
 
         customer.persist(); // Automatically updates or persists the entity
         return customer;
+    }
       
     public String verificationToken() { return verificationToken; }
 

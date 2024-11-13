@@ -12,7 +12,6 @@ import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import dk.leghetto.classes.Customer;
 import dk.leghetto.classes.CustomerRepository;
 import dk.leghetto.schemas.CustomerRequest;
-import dk.leghetto.classes.CustomerRequest;
 import dk.leghetto.services.MailService;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
@@ -98,6 +97,7 @@ public class CustomerResource {
                     .entity("Error updating customer: " + e.getMessage())
                     .build();
         }
+    }
 
     @GET
     @Transactional
