@@ -15,8 +15,4 @@ public class ProductRepository implements PanacheRepository<Product> {
         Product p = findById(id);
         delete(p);
     }
-    public Product findById2(Long id) {
-        Product p = findById(id);
-        return p;
-    }
 }
