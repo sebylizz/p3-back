@@ -5,6 +5,7 @@ import java.util.List;
 
 import dk.leghetto.classes.Product;
 import dk.leghetto.classes.ProductRepository;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.Consumes;
@@ -45,15 +46,13 @@ public class ProductResource {
     @POST
     @Transactional
     @Consumes(MediaType.APPLICATION_JSON)
+    @RolesAllowed("admin")
     @Path("/addproduct")
-    // Der skal laves schema hertil
     public Response addProduct(Product product) {
         if (product.getPrice() == null) {
             return Response.status(400).entity("Price cannot be null").build();
         }
-        //Flere checks?
         productRepository.persist(product);
-        productRepository.persist(product);  // Persist the entire product object
         return Response.ok(Collections.singletonMap("id", product.getId())).build();
     }
     
@@ -76,7 +75,6 @@ public class ProductResource {
     @Transactional
     @Consumes(MediaType.APPLICATION_JSON)
     @Path("/deleteproducts") 
-    // JSON body?
     public Response deleteProducts(List<Long> ids) {
         try {
             for (Long id : ids) {
@@ -96,7 +94,7 @@ public class ProductResource {
     public Response updateProduct(
             @PathParam("id") Long id, Product product) {
         
-        Product existingProduct = productRepository.findById2(id);
+        Product existingProduct = productRepository.findById(id);
         if (existingProduct == null) {
             return Response.status(404).build();
         }
