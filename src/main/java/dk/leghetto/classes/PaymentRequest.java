@@ -21,9 +21,7 @@ public class PaymentRequest {
         ArrayList<LineItem> items = new ArrayList<>();
         for (Product product : order.getItems()) {
 
-            Long amount = (long)(product.getPrice() * 100);
-
-            System.out.println("Her: " + amount);
+            System.out.println("Her: " + product.getPrice() );
 
             PriceCreateParams priceParams =
                     PriceCreateParams
@@ -32,7 +30,7 @@ public class PaymentRequest {
                                     PriceCreateParams.ProductData.builder().setName(product.getName()).build()
                             )
                             .setCurrency("DKK")
-                            .setUnitAmount(amount)
+                            .setUnitAmount(product.getPrice())
                             .build();
             Price price = Price.create(priceParams);
 
