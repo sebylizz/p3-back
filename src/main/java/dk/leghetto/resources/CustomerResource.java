@@ -13,10 +13,12 @@ import dk.leghetto.classes.Customer;
 import dk.leghetto.classes.CustomerRepository;
 import dk.leghetto.schemas.CustomerRequest;
 import dk.leghetto.services.MailService;
+import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.POST;
@@ -45,11 +47,22 @@ public class CustomerResource {
     @Inject
     MailService mailService;
 
+    // @GET
+    // @Produces(MediaType.APPLICATION_JSON)
+    // @Path("/getcustomers")
+    // public List<Customer> listPersons() {
+    //     return customerRepository.listAll();
+    // }
+
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/getcustomers")
-    public List<Customer> listPersons() {
-        return customerRepository.listAll();
+    public List<Customer> listCustomers(
+            @QueryParam("offset") @DefaultValue("0") int offset,
+            @QueryParam("limit") @DefaultValue("10") int limit) {
+        
+        PanacheQuery<Customer> query = customerRepository.findAll();
+        return query.page(offset / limit, limit).list(); // Fetch paginated customers
     }
 
     @POST
