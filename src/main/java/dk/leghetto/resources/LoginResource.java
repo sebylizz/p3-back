@@ -90,7 +90,16 @@ public class LoginResource {
 
             customerRepository.addResetToken(email, resetToken, expiration);
 
-            mailService.sendMail(email, "Forgot password at Leghetto", "Hello " + customer.getFirstName() + "\nPlease click the following link to reset your password: " + resetLink);
+            String body = "Hello " + customer.getFirstName() + ",\n\n"
+                    + "We received a request to reset your password for your Leghetto account. "
+                    + "If you made this request, please click the link below to set a new password:\n\n"
+                    + resetLink + "\n\n"
+                    + "If you did not request to reset your password, you can safely ignore this email. "
+                    + "Your password will remain unchanged.\n\n"
+                    + "Thank you,\n"
+                    + "The Leghetto Team";
+
+            mailService.sendMail(email, "Forgot password at Leghetto", body);
         }
         return Response.ok().build();
     }
