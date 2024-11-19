@@ -15,12 +15,10 @@ public class Category extends PanacheEntityBase {
 
     @Column(name = "name")
     private String name;
+
     @ManyToOne
     @JoinColumn(name = "parent_category_id")
     private Category parentCategory;
-
-    @OneToMany(mappedBy = "parentCategory", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Category> subCategories;
 
     // Getters and Setters
     public Long getId() { return id; }
@@ -32,7 +30,5 @@ public class Category extends PanacheEntityBase {
     public Category getParentCategory() { return parentCategory; }
     public void setParentCategory(Category parentCategory) { this.parentCategory = parentCategory; }
 
-    public List<Category> getSubCategories() { return subCategories; }
-    public void setSubCategories(List<Category> subCategories) { this.subCategories = subCategories; }
     
 }

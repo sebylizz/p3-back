@@ -8,7 +8,7 @@ public class ProductRequestDTO {
     private String name;
     private String description;
     private Boolean isActive;
-    // private Long categoryId;
+    private Long categoryId;
     private Long collectionId;
 
     private List<ColorDTO> colors;
@@ -39,13 +39,13 @@ public class ProductRequestDTO {
         this.isActive = isActive;
     }
 
-    // public Long getCategoryId() {
-    //     return categoryId;
-    // }
+    public Long getCategoryId() {
+        return categoryId;
+    }
 
-    // public void setCategoryId(Long categoryId) {
-    //     this.categoryId = categoryId;
-    // }
+    public void setCategoryId(Long categoryId) {
+        this.categoryId = categoryId;
+    }
 
     public Long getCollectionId() {
         return collectionId;

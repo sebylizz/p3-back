@@ -2,8 +2,6 @@ package dk.leghetto.resources;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.stripe.model.tax.Registration.CountryOptions.Co;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import dk.leghetto.classes.Category;
 import dk.leghetto.classes.Collection;
@@ -29,12 +27,11 @@ public class ProductsResource {
     @POST
     @Transactional
     public Response addProduct(ProductRequestDTO request) {
-        // Step 1: Validate and Fetch Related Entities
-        // Category category = Category.findById(request.getCategoryId());
-        // if (category == null) {
-        //     return Response.status(Response.Status.BAD_REQUEST)
-        //             .entity("Invalid category ID: " + request.getCategoryId()).build();
-        // }
+        Category category = Category.findById(request.getCategoryId());
+        if (category == null) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("Invalid category ID: " + request.getCategoryId()).build();
+        }
 
         Collection collection = Collection.findById(request.getCollectionId());
         if( collection == null){
@@ -48,7 +45,7 @@ public class ProductsResource {
         product.setName(request.getName());
         product.setDescription(request.getDescription());
         product.setIsActive(request.getIsActive());
-        // product.setCategory(category); 
+        product.setCategory(category); 
         product.setCollection(collection); 
         product.persist();
 
