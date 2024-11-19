@@ -1,7 +1,8 @@
 package dk.leghetto.classes;
 import jakarta.persistence.*;
 
-import io.quarkus.hibernate.orm.panache.PanacheEntity;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 
 @Entity
@@ -11,9 +12,10 @@ public class ProductColor extends PanacheEntityBase {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @JsonBackReference
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
-    private Products product;
+    private Product product;
 
     @ManyToOne
     @JoinColumn(name = "color_id", nullable = false)
@@ -32,8 +34,8 @@ public class ProductColor extends PanacheEntityBase {
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
-    public Products getProduct() { return product; }
-    public void setProduct(Products product) { this.product = product; }
+    public Product getProduct() { return product; }
+    public void setProduct(Product product) { this.product = product; }
 
     public Colors getColor() { return color; }
     public void setColor(Colors color) { this.color = color; }

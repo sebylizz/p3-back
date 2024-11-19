@@ -2,9 +2,16 @@ package dk.leghetto.classes;
 
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
+import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
+
 @Entity
-@Table(name = "products", schema = "dev")
-public class Product {
+@Table(name = "product", schema = "dev")
+public class Product extends PanacheEntityBase {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -12,89 +19,53 @@ public class Product {
     @Column(name = "name")
     private String name;
 
-    @Column(name = "size")
-    private String size;
+    @Column(name = "description")
+    private String description;
 
-    @Column(name = "price")
-    private Long price;
+    @Column(name = "is_active")
+    private Boolean isActive;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id", nullable = true)
+    private Category category;
 
-    @Column(name = "image")
-    private String image;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "collection_id")
+    private Collection collection;
 
-    @Column(name = "quantity")
-    private Integer quantity;
+    @OneToOne(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private ProductPrice price;
 
-    @Column(name = "main_image")
-    private String mainImage;
+    @JsonManagedReference
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<ProductColor> colors = new ArrayList<>();
 
-    public Product() {
-    }
+    // Getters and Setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
 
-    public Product(String name, String size, Long price, int quantity, String image, String mainImage) {
-        this.name = name;
-        this.size = size;
-        this.price = price;
-        this.quantity=quantity;
-        this.image=image;
-        this.mainImage=mainImage;
-    }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
 
-    public String getName() {
-        return name;
-    }
+    public Boolean getIsActive() { return isActive; }
+    public void setIsActive(Boolean isActive) { this.isActive = isActive; }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+    public Category getCategory() { return category; }
+    public void setCategory(Category category) { this.category = category; }
 
-    public Long getId() {
-        return id;
-    }
+    public Collection getCollection() { return collection; }
+    public void setCollection(Collection collection) { this.collection = collection; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getSize() {
-        return size;
-    }
-
-    public void setSize(String size) {
-        this.size = size;
-    }
-
-
-    public Long getPrice() {
-        return price;
-    }
-
-    public void setPrice(Long price) {
+    public ProductPrice getPrice() { return price; }
+    public void setPrices(ProductPrice price) {
         this.price = price;
     }
 
-    public String getImage() {
-        return image;
+    public List<ProductColor> getColors() { return colors; }
+    public void setColors(List<ProductColor> colors) {
+        this.colors = colors;
     }
-
-    public void setImage(String image) {
-        this.image = image;
-    }
-
-    public Integer getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(int quantity) {
-        this.quantity = quantity;
-    }
-    public String getMainImage() {
-        return mainImage;
-    }
-
-    public void setMainImage(String mainImage) {
-        this.mainImage = mainImage;
-    }
-
 }

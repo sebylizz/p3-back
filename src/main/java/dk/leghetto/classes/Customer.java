@@ -15,6 +15,8 @@ import jakarta.persistence.Table;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.NotFoundException;
 
+import java.time.LocalDateTime;
+
 @Entity
 @UserDefinition
 @Table(name = "users")
@@ -52,6 +54,12 @@ public class Customer extends PanacheEntityBase {
 
     @Column(name = "verified")
     private Boolean verified;
+
+    @Column(name = "reset_password_token")
+    private String resetPasswordToken;
+
+    @Column(name = "reset_password_token_expiration")
+    private LocalDateTime resetPasswordTokenExpiration;
 
     public Customer() {
     }
@@ -114,6 +122,22 @@ public class Customer extends PanacheEntityBase {
     public void setEmail(String email) {
         this.email = email;
     }
+
+    public void setPassword(String password) {
+        this.password = BcryptUtil.bcryptHash(password);
+    }
+
+    public void setVerified(Boolean verified) { //for at ændre verification status efter verification link er trykket
+        this.verified = verified;
+    }
+
+    public void setResetPasswordToken(String resetPasswordToken) {
+        this.resetPasswordToken = resetPasswordToken;
+    }
+
+    public void setResetPasswordTokenExpiration(LocalDateTime resetPasswordTokenExpiration) {
+        this.resetPasswordTokenExpiration = resetPasswordTokenExpiration;
+    }
     
     @Transactional
     public static Customer updateCustomer(Long id, String firstName, String lastName, String email) {
@@ -134,10 +158,7 @@ public class Customer extends PanacheEntityBase {
 
     public Boolean verified() { return verified; }
 
-    public void setVerified(Boolean verified) { //for at ændre verification status efter verification link er trykket
-        this.verified = verified;
-
-    }
+    public LocalDateTime getResetPasswordTokenExpiration() { return resetPasswordTokenExpiration; }
 
     @Override
     public String toString() {

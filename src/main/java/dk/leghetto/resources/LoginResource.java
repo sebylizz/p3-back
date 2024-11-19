@@ -1,31 +1,26 @@
 package dk.leghetto.resources;
 
+import dk.leghetto.classes.*;
+import jakarta.ws.rs.*;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 
-import dk.leghetto.classes.Customer;
-import dk.leghetto.classes.CustomerRepository;
-import dk.leghetto.classes.ForgotPasswordRequest;
-import dk.leghetto.classes.LoginRequest;
-import dk.leghetto.classes.Token;
-import dk.leghetto.classes.TokenGenerator;
 import dk.leghetto.services.MailService;
+import dk.leghetto.services.TokenService;
 import io.quarkus.elytron.security.common.BcryptUtil;
 import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Path("/login")
 public class LoginResource {
@@ -33,7 +28,7 @@ public class LoginResource {
     CustomerRepository customerRepository;
 
     @Inject
-    TokenGenerator tokenGenerator;
+    TokenService tokenService;
 
     @Inject
     MailService mailService;
@@ -42,8 +37,7 @@ public class LoginResource {
     @Transactional
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response login(
-            @RequestBody(description = "Login request containing email and password", required = true, content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = LoginRequest.class))) LoginRequest loginRequest) {
+    public Response login(LoginRequest loginRequest) {
         String email = loginRequest.getEmail();
         String password = loginRequest.getPassword();
         if (email == null || password == null) {
@@ -52,7 +46,7 @@ public class LoginResource {
 
         Customer customer = customerRepository.findByEmail(email);
         if (customer != null && BcryptUtil.matches(password, customer.getPasswordHash())) {
-            String token = tokenGenerator.generateToken(email);
+            String token = tokenService.generateToken(email);
 
             return Response.ok().header("Set-Cookie", "token="+token).build();
         }
@@ -75,21 +69,71 @@ public class LoginResource {
     @RolesAllowed("user")
     public Response refresh() {
         String email = jwtWebToken.getName();
-        String token = tokenGenerator.generateToken(email);
+        String token = tokenService.generateToken(email);
         return Response.ok().entity(new Token(token)).build();
     }
 
     @POST
     @Path("/forgot")
+    @Transactional
     @Consumes(MediaType.APPLICATION_JSON)
     public Response forgotPassword(
             @RequestBody(description = "Mail of forgetful user", required = true, content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ForgotPasswordRequest.class))) ForgotPasswordRequest forgotPasswordRequest) {
+
         String email = forgotPasswordRequest.getEmail();
         Customer customer = customerRepository.findByEmail(email);
+
         if (customer != null) {
-            mailService.sendMail(email, "Forgot password at Leghetto", "Hello Mr. " + customer.getLastName());
+            String resetToken = UUID.randomUUID().toString();
+            String resetLink = "http://localhost:3000/reset_password?token=" + resetToken;
+            LocalDateTime expiration = LocalDateTime.now().plusMinutes(30); // expiration på 30 min fra generering
+
+            customerRepository.addResetToken(email, resetToken, expiration);
+
+            String body = "Hello " + customer.getFirstName() + ",\n\n"
+                    + "We received a request to reset your password for your Leghetto account. "
+                    + "If you made this request, please click the link below to set a new password:\n\n"
+                    + resetLink + "\n\n"
+                    + "If you did not request to reset your password, you can safely ignore this email. "
+                    + "Your password will remain unchanged.\n\n"
+                    + "Thank you,\n"
+                    + "The Leghetto Team";
+
+            mailService.sendMail(email, "Forgot password at Leghetto", body);
         }
         return Response.ok().build();
+    }
+
+    @POST
+    @Path("/reset-password")
+    @Transactional
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response resetPassword(ResetPasswordRequest resetPasswordRequest) {
+
+        String token = resetPasswordRequest.getToken();
+        String newPassword = resetPasswordRequest.getPassword();
+
+        Customer customer = customerRepository.findByResetPasswordToken(token);
+
+        if (customer == null) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity("Invalid reset token")
+                    .build();
+        }
+
+        if (customer.getResetPasswordTokenExpiration() == null || customer.getResetPasswordTokenExpiration().isBefore(LocalDateTime.now())) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity("Reset token has expired")
+                    .build();
+        }
+
+        customer.setPassword(newPassword);
+        customer.setResetPasswordToken(null);
+        customer.setResetPasswordTokenExpiration(null);
+        customer.persist();
+
+        return Response.ok("Password reset!").build();
     }
 
     @Inject

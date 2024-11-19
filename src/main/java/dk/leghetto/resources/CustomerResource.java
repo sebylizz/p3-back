@@ -2,19 +2,14 @@ package dk.leghetto.resources;
 
 import java.util.List;
 import java.util.UUID;
-import jakarta.annotation.PostConstruct;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.SecurityContext;
-import org.eclipse.microprofile.openapi.annotations.media.Content;
-import org.eclipse.microprofile.openapi.annotations.media.Schema;
-import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import dk.leghetto.classes.Customer;
 import dk.leghetto.classes.CustomerRepository;
-import dk.leghetto.schemas.CustomerRequest;
+import dk.leghetto.services.CustomerRequest;
 import dk.leghetto.services.MailService;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
-import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.Consumes;
@@ -25,10 +20,8 @@ import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.SecurityContext;
 
 @Path("/customers")
 public class CustomerResource {
@@ -69,8 +62,7 @@ public class CustomerResource {
     @Transactional
     @Consumes(MediaType.APPLICATION_JSON)
     @Path("/addcustomer")
-    public Response addCustomer(
-            @RequestBody(description = "Customer details", required = true, content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = CustomerRequest.class))) CustomerRequest customerRequest) {
+    public Response addCustomer(CustomerRequest customerRequest) {
 
         if (customerRepository.findByEmail(customerRequest.getEmail()) != null) {
             return Response.status(Response.Status.CONFLICT)
@@ -89,7 +81,15 @@ public class CustomerResource {
                 verificationToken,
                 false); //for at sætte verified
 
-        mailService.sendMail(customerRequest.getEmail(), "Welcome to Leghetto", "We are pleased to welcome you in Leghetto " + customerRequest.getFirstName() + " with this emailaddress: " + customerRequest.getEmail() + "\nPlease click this link to verify your account: " + verificationLink);
+        String body = "Hello " + customerRequest.getFirstName() + ",\n\n"
+                + "Welcome to Leghetto! We are delighted to have you join our community.\n\n"
+                + "To complete your registration and verify your account, please click the link below:\n\n"
+                + verificationLink + "\n\n"
+                + "If you did not create this account, please disregard this email.\n\n"
+                + "Best regards,\n"
+                + "The Leghetto Team";
+
+        mailService.sendMail(customerRequest.getEmail(), "Welcome to Leghetto", body);
         return Response.ok().build();
     }
     @POST

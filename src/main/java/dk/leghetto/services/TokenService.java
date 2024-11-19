@@ -1,16 +1,16 @@
-package dk.leghetto.classes;
+package dk.leghetto.services;
 
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.HashSet;
 
+import dk.leghetto.classes.CustomerRepository;
 import io.smallrye.jwt.build.Jwt;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 @ApplicationScoped
-public class TokenGenerator {
-
+public class TokenService {
     @Inject
     CustomerRepository cr;
 

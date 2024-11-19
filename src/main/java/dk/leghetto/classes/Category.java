@@ -1,9 +1,6 @@
 package dk.leghetto.classes;
 
-import java.util.List;
-
 import jakarta.persistence.*;
-import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 
 @Entity
@@ -29,6 +26,4 @@ public class Category extends PanacheEntityBase {
 
     public Category getParentCategory() { return parentCategory; }
     public void setParentCategory(Category parentCategory) { this.parentCategory = parentCategory; }
-
-    
 }

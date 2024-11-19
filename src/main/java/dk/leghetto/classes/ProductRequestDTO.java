@@ -79,8 +79,6 @@ public class ProductRequestDTO {
         this.variants = variants;
     }
 
-
-
     public static class ColorDTO {
         private Long colorId;
         private String mainImage;
@@ -112,17 +110,17 @@ public class ProductRequestDTO {
     }
 
     public static class PriceDTO {
-        private Double price;
+        private Long price;
         private Boolean isDiscount;
         private LocalDate startDate;
         private LocalDate endDate;
 
 
-        public Double getPrice() {
+        public Long getPrice() {
             return price;
         }
 
-        public void setPrice(Double price) {
+        public void setPrice(Long price) {
             this.price = price;
         }
 
@@ -155,7 +153,6 @@ public class ProductRequestDTO {
         private Long colorId;
         private Long sizeId;
         private Integer quantity;
-
 
         public Long getColorId() {
             return colorId;
