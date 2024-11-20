@@ -14,7 +14,7 @@ import java.util.ArrayList;
 
 @ApplicationScoped
 public class PaymentRequest {
-    public void paymentRequest(Order order) throws StripeException {
+    public String paymentRequest(Order order) throws StripeException {
         Stripe.apiKey = "sk_test_51QA8WbCZh5mI9KbJi0PWYz6XKnbRn1slHQYMrlOpAVG13AJV1HT6kQ9ihNFPbr7uzpmLwIfU6TeXs5m4YOeYFr1U00fKvdltAl";
 
         ArrayList<LineItem> items = new ArrayList<>();
@@ -47,6 +47,7 @@ public class PaymentRequest {
                         .build();
 
         PaymentLink paymentLink = PaymentLink.create(paymentParams);
-        System.out.println("Here is your payment link: " + paymentLink.getUrl());
+
+        return paymentLink.getUrl();
     }
 }
