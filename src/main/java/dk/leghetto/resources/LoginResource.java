@@ -1,12 +1,19 @@
 package dk.leghetto.resources;
 
-import dk.leghetto.classes.*;
-import jakarta.ws.rs.*;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 
+import dk.leghetto.classes.Customer;
+import dk.leghetto.classes.CustomerRepository;
+import dk.leghetto.classes.ForgotPasswordRequest;
+import dk.leghetto.classes.LoginRequest;
+import dk.leghetto.classes.ResetPasswordRequest;
+import dk.leghetto.classes.Token;
 import dk.leghetto.services.MailService;
 import dk.leghetto.services.TokenService;
 import io.quarkus.elytron.security.common.BcryptUtil;
@@ -14,13 +21,15 @@ import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
-
-import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Path("/login")
 public class LoginResource {
