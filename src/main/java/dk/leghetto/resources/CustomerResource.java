@@ -76,7 +76,15 @@ public class CustomerResource {
                 verificationToken,
                 false); //for at sætte verified
 
-        mailService.sendMail(customerRequest.getEmail(), "Welcome to Leghetto", "We are pleased to welcome you in Leghetto " + customerRequest.getFirstName() + " with this emailaddress: " + customerRequest.getEmail() + "\nPlease click this link to verify your account: " + verificationLink);
+        String body = "Hello " + customerRequest.getFirstName() + ",\n\n"
+                + "Welcome to Leghetto! We are delighted to have you join our community.\n\n"
+                + "To complete your registration and verify your account, please click the link below:\n\n"
+                + verificationLink + "\n\n"
+                + "If you did not create this account, please disregard this email.\n\n"
+                + "Best regards,\n"
+                + "The Leghetto Team";
+
+        mailService.sendMail(customerRequest.getEmail(), "Welcome to Leghetto", body);
         return Response.ok().build();
     }
     @POST
