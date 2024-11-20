@@ -18,7 +18,7 @@ public class PaymentResource {
 
     @Inject
     PaymentRequest paymentRequest;
-
+/*
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/getitem")
@@ -32,4 +32,5 @@ public class PaymentResource {
 
         return Response.ok().build();
     }
+    */
 }
