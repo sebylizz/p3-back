@@ -18,16 +18,16 @@ public class PaymentRequest {
         Stripe.apiKey = "sk_test_51QA8WbCZh5mI9KbJi0PWYz6XKnbRn1slHQYMrlOpAVG13AJV1HT6kQ9ihNFPbr7uzpmLwIfU6TeXs5m4YOeYFr1U00fKvdltAl";
 
         ArrayList<LineItem> items = new ArrayList<>();
-        for (Product product : order.getItems()) {
+        for (ProductVariant product : order.getItems()) {
 
             PriceCreateParams priceParams =
                     PriceCreateParams
                             .builder()
                             .setProductData(
-                                    PriceCreateParams.ProductData.builder().setName(product.getName()).build()
+                                    PriceCreateParams.ProductData.builder().setName(product.getProduct().getName()).build()
                             )
                             .setCurrency("DKK")
-                            .setUnitAmount(product.getPrice())
+                            .setUnitAmount(69L)//product.getPrice())
                             .build();
             Price price = Price.create(priceParams);
 

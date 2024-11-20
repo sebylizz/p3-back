@@ -1,116 +1,118 @@
 package dk.leghetto.resources;
 
-import java.util.Collections;
-import java.util.List;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-import dk.leghetto.classes.Product;
+import dk.leghetto.classes.Category;
+import dk.leghetto.classes.Collection;
+import dk.leghetto.classes.Colors;
+import dk.leghetto.classes.ProductColor;
+import dk.leghetto.classes.ProductPrice;
 import dk.leghetto.classes.ProductRepository;
-import jakarta.annotation.security.RolesAllowed;
+import dk.leghetto.classes.ProductRequestDTO;
+import dk.leghetto.classes.ProductVariant;
+import dk.leghetto.classes.Product;
+import dk.leghetto.classes.Sizes;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
-import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.MediaType;
 
 @Path("/products")
+@Produces(MediaType.APPLICATION_JSON)
+@Consumes(MediaType.APPLICATION_JSON)
 public class ProductResource {
     @Inject
-    ProductRepository productRepository;
+    ProductRepository pr;
 
+    @Path("/getall")
     @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    @Path("/getproducts")
-    public List<Product> listProducts() {
-        return productRepository.listAll();
+    public Response getAllProducts() {
+        return Response.ok(pr.getAllActiveProducts()).build();
     }
 
-    // @POST
-    // @Transactional
-    // @Consumes(MediaType.APPLICATION_JSON)
-    // @Path("/addproduct")
-    // public Response addProduct(
-    //         @Parameter(description = "Product name", required = true) @QueryParam("name") String name,
-    //         @Parameter(description = "Size", required = true) @DefaultValue("Onesize") @QueryParam("size") String size,
-    //         @Parameter(description = "Price", required = true) @QueryParam("price") Integer price) {
-    //     productRepository.add(name, size, price);
-    //     return Response.ok().build();
-    // }
-
+    @Path("/add")
     @POST
     @Transactional
-    @Consumes(MediaType.APPLICATION_JSON)
-    @RolesAllowed("admin")
-    @Path("/addproduct")
-    public Response addProduct(Product product) {
-        if (product.getPrice() == null) {
-            return Response.status(400).entity("Price cannot be null").build();
+    public Response addProduct(ProductRequestDTO request) {
+        Category category = Category.findById(request.getCategoryId());
+        if (category == null) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("Invalid category ID: " + request.getCategoryId()).build();
         }
-        productRepository.persist(product);
-        return Response.ok(Collections.singletonMap("id", product.getId())).build();
-    }
-    
 
-    @DELETE
-    @Transactional
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Path("/deleteproduct/{id}")
-    // Er det en god ide at have som pathparam?
-    public Response deleteProduct(@PathParam("id") Long id) {
-        try {
-            productRepository.delete(id);
-            return Response.ok().build();
-        } catch (Exception e) {
-            return Response.status(404).build();
+        Collection collection = Collection.findById(request.getCollectionId());
+        if( collection == null){
+            return Response.status(Response.Status.BAD_REQUEST)
+            .entity("Invalid category ID: " + request.getCollectionId()).build();
         }
-    }
 
-    @DELETE
-    @Transactional
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Path("/deleteproducts") 
-    public Response deleteProducts(List<Long> ids) {
-        try {
-            for (Long id : ids) {
-                productRepository.delete(id); 
+        // Step 2: Persist Product
+        Product product = new Product();
+        product.setName(request.getName());
+        product.setDescription(request.getDescription());
+        product.setIsActive(request.getIsActive());
+        product.setCategory(category); 
+        product.setCollection(collection); 
+        product.persist();
+
+        // Step 3: Persist Product Colors
+        for (ProductRequestDTO.ColorDTO colorDTO : request.getColors()) {
+            ProductColor productColor = new ProductColor();
+            productColor.setProduct(product);
+
+            Colors color = Colors.findById(colorDTO.getColorId());
+            if (color == null) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("Invalid color ID: " + colorDTO.getColorId()).build();
             }
-            return Response.ok().build();
-        } catch (Exception e) {
-            return Response.status(404).build();
-        }
-    }
 
-    @PUT
-    @Transactional
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Path("/updateproduct/{id}")
-    // Schema
-    public Response updateProduct(
-            @PathParam("id") Long id, Product product) {
-        
-        Product existingProduct = productRepository.findById(id);
-        if (existingProduct == null) {
-            return Response.status(404).build();
+            productColor.setColor(color);
+            productColor.setMainImage(colorDTO.getMainImage());
+            ObjectMapper mapper = new ObjectMapper();
+        String jsonImages;
+        try {
+            jsonImages = mapper.writeValueAsString(colorDTO.getImages());
+            productColor.setImages(jsonImages);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
         }
-        
-        // Update product fields with the values from the provided product object
-        existingProduct.setName(product.getName());
-        existingProduct.setSize(product.getSize());
-        existingProduct.setPrice(product.getPrice());
-        existingProduct.setImage(product.getImage());
-        existingProduct.setQuantity(product.getQuantity());
-        existingProduct.setMainImage(product.getMainImage());
-    
-        productRepository.persist(existingProduct);
-        // Persist the updated product
-        productRepository.persist(existingProduct); // Save the updated product to the database
-        
-        return Response.ok().build();
+            productColor.persist();
+        }
+
+        // Step 4: Persist Product Price
+        ProductPrice productPrice = new ProductPrice();
+        productPrice.setProduct(product);
+        productPrice.setPrice(request.getPrice().getPrice());
+        productPrice.setIsDiscount(request.getPrice().getIsDiscount()); 
+        productPrice.setStartDate(request.getPrice().getStartDate());
+        productPrice.setEndDate(request.getPrice().getEndDate());
+        productPrice.persist();
+
+        // Step 5: Persist Product Variants
+        for (ProductRequestDTO.VariantDTO variantDTO : request.getVariants()) {
+            ProductColor productColor = ProductColor.find("product = ?1 and color.id = ?2",
+                    product, variantDTO.getColorId()).firstResult();
+            Sizes size = Sizes.findById(variantDTO.getSizeId());
+            if (productColor == null || size == null) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("Invalid color ID or size ID in variant").build();
+            }
+
+            ProductVariant productVariant = new ProductVariant();
+            productVariant.setProduct(product);
+            productVariant.setColor(productColor.getColor());
+            productVariant.setSize(size);
+            productVariant.setQuantity(variantDTO.getQuantity());
+            productVariant.persist();
+        }
+
+        return Response.status(Response.Status.CREATED).entity(product).build();
     }
+    
 }

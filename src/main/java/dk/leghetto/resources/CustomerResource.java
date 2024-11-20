@@ -2,31 +2,26 @@ package dk.leghetto.resources;
 
 import java.util.List;
 import java.util.UUID;
-import jakarta.annotation.PostConstruct;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.SecurityContext;
-import org.eclipse.microprofile.openapi.annotations.media.Content;
-import org.eclipse.microprofile.openapi.annotations.media.Schema;
-import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import dk.leghetto.classes.Customer;
 import dk.leghetto.classes.CustomerRepository;
-import dk.leghetto.schemas.CustomerRequest;
+import dk.leghetto.services.CustomerRequest;
 import dk.leghetto.services.MailService;
-import jakarta.annotation.security.RolesAllowed;
+import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.SecurityContext;
 
 @Path("/customers")
 public class CustomerResource {
@@ -45,19 +40,29 @@ public class CustomerResource {
     @Inject
     MailService mailService;
 
+    // @GET
+    // @Produces(MediaType.APPLICATION_JSON)
+    // @Path("/getcustomers")
+    // public List<Customer> listPersons() {
+    //     return customerRepository.listAll();
+    // }
+
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/getcustomers")
-    public List<Customer> listPersons() {
-        return customerRepository.listAll();
+    public List<Customer> listCustomers(
+            @QueryParam("offset") @DefaultValue("0") int offset,
+            @QueryParam("limit") @DefaultValue("10") int limit) {
+        
+        PanacheQuery<Customer> query = customerRepository.findAll();
+        return query.page(offset / limit, limit).list(); // Fetch paginated customers
     }
 
     @POST
     @Transactional
     @Consumes(MediaType.APPLICATION_JSON)
     @Path("/addcustomer")
-    public Response addCustomer(
-            @RequestBody(description = "Customer details", required = true, content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = CustomerRequest.class))) CustomerRequest customerRequest) {
+    public Response addCustomer(CustomerRequest customerRequest) {
 
         if (customerRepository.findByEmail(customerRequest.getEmail()) != null) {
             return Response.status(Response.Status.CONFLICT)

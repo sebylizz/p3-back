@@ -1,25 +1,35 @@
 package dk.leghetto.resources;
 
-import dk.leghetto.classes.*;
-import jakarta.ws.rs.*;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 
+import dk.leghetto.classes.Customer;
+import dk.leghetto.classes.CustomerRepository;
+import dk.leghetto.classes.ForgotPasswordRequest;
+import dk.leghetto.classes.LoginRequest;
+import dk.leghetto.classes.ResetPasswordRequest;
+import dk.leghetto.classes.Token;
 import dk.leghetto.services.MailService;
+import dk.leghetto.services.TokenService;
 import io.quarkus.elytron.security.common.BcryptUtil;
 import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
-
-import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Path("/login")
 public class LoginResource {
@@ -27,7 +37,7 @@ public class LoginResource {
     CustomerRepository customerRepository;
 
     @Inject
-    TokenGenerator tokenGenerator;
+    TokenService tokenService;
 
     @Inject
     MailService mailService;
@@ -36,8 +46,7 @@ public class LoginResource {
     @Transactional
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response login(
-            @RequestBody(description = "Login request containing email and password", required = true, content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = LoginRequest.class))) LoginRequest loginRequest) {
+    public Response login(LoginRequest loginRequest) {
         String email = loginRequest.getEmail();
         String password = loginRequest.getPassword();
         if (email == null || password == null) {
@@ -46,7 +55,7 @@ public class LoginResource {
 
         Customer customer = customerRepository.findByEmail(email);
         if (customer != null && BcryptUtil.matches(password, customer.getPasswordHash())) {
-            String token = tokenGenerator.generateToken(email);
+            String token = tokenService.generateToken(email);
 
             return Response.ok().header("Set-Cookie", "token="+token).build();
         }
@@ -69,7 +78,7 @@ public class LoginResource {
     @RolesAllowed("user")
     public Response refresh() {
         String email = jwtWebToken.getName();
-        String token = tokenGenerator.generateToken(email);
+        String token = tokenService.generateToken(email);
         return Response.ok().entity(new Token(token)).build();
     }
 
