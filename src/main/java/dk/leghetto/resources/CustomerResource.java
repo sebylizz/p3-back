@@ -77,6 +77,9 @@ public class CustomerResource {
                 customerRequest.getFirstName(),
                 customerRequest.getLastName(),
                 customerRequest.getEmail(),
+                customerRequest.getTelephone(),
+                customerRequest.getAddress(),
+                customerRequest.getPostalCode(),
                 customerRequest.getPassword(),
                 verificationToken,
                 false); //for at sætte verified
