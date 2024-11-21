@@ -34,6 +34,12 @@ public class Customer extends PanacheEntityBase {
     @Column(name = "telephone")
     private Integer telephone;
 
+    @Column(name = "address")
+    private String address;
+
+    @Column(name = "postal_code")
+    private Integer postalCode;
+
     @Username
     @Column(name = "email")
     private String email;
@@ -64,10 +70,13 @@ public class Customer extends PanacheEntityBase {
     public Customer() {
     }
 
-    public Customer(String firstName, String lastName, String email, String password, String verificationToken, Boolean verified) {
+    public Customer(String firstName, String lastName, String email, Integer telephone, String address, Integer postalCode, String password, String verificationToken, Boolean verified) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
+        this.telephone = telephone;
+        this.address = address;
+        this.postalCode = postalCode;
         this.newsletter = false;
         this.password = BcryptUtil.bcryptHash(password);
         this.role = "user";
