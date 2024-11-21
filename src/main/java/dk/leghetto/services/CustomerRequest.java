@@ -5,6 +5,9 @@ public class CustomerRequest {
     private String password;
     private String firstName;
     private String lastName;
+    private Integer telephone;
+    private String address;
+    private Integer postalCode;
     private String role;
     public String getEmail() {
         return email;
@@ -24,6 +27,12 @@ public class CustomerRequest {
     public String getLastName() {
         return lastName;
     }
+    public Integer getTelephone() { return telephone; }
+    public String getAddress() { return address; }
+    public Integer getPostalCode() { return postalCode; }
+    public void setTelephone(Integer telephone) { this.telephone = telephone; }
+    public void setAddress(String address) { this.address = address; }
+    public void setPostalCode(Integer postalCode) { this.postalCode = postalCode; }
     public void setFirstName(String firstName) {
         this.firstName = firstName;
     }
