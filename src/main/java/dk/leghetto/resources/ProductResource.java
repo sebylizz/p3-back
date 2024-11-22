@@ -11,6 +11,7 @@ import dk.leghetto.classes.ProductPrice;
 import dk.leghetto.classes.ProductRepository;
 import dk.leghetto.classes.ProductRequestDTO;
 import dk.leghetto.classes.ProductVariant;
+import dk.leghetto.classes.ProductVariantRepository;
 import dk.leghetto.classes.Product;
 import dk.leghetto.classes.Sizes;
 import jakarta.inject.Inject;
@@ -29,6 +30,15 @@ import jakarta.ws.rs.core.MediaType;
 public class ProductResource {
     @Inject
     ProductRepository pr;
+
+    @Inject
+    ProductVariantRepository pvr;
+
+    @Path("/getvariants")
+    @GET
+    public Response getVariants() {
+        return Response.ok(pvr.getDTO(1L)).build();
+    }
 
     @Path("/getall")
     @GET

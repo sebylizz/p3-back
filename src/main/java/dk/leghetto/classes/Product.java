@@ -2,6 +2,8 @@ package dk.leghetto.classes;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -32,20 +34,24 @@ public class Product extends PanacheEntityBase {
     @Column(name = "is_active")
     private Boolean isActive;
 
-    @OneToOne(fetch = FetchType.LAZY, mappedBy = "product")
-    private ProductPrice price;
-
     @Column(name = "is_discount")
     private Boolean isDiscount;
 
+    @JsonManagedReference
+    @OneToOne(fetch = FetchType.LAZY, mappedBy = "product")
+    private ProductPrice price;
+
+    @JsonManagedReference
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = true)
     private Category category;
 
+    @JsonManagedReference
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "collection_id")
     private Collection collection;
 
+    @JsonManagedReference
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ProductVariant> variants;
 

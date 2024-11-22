@@ -5,4 +5,11 @@ import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
 public class ProductVariantRepository implements PanacheRepository<ProductVariant> {
+    public ProductVariantDTO getDTO(Long id) {
+        ProductVariant product = findById(id);
+        ProductVariantDTO dto = new ProductVariantDTO();
+        dto.setId(product.getId());
+        dto.setPrice(product.getProduct().getPrice().getPrice());
+        return dto;
+    }
 }
