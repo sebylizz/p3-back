@@ -27,7 +27,7 @@ public class PaymentRequest {
                                     PriceCreateParams.ProductData.builder().setName(product.getProduct().getName()).build()
                             )
                             .setCurrency("DKK")
-                            .setUnitAmount(69L)//product.getPrice())
+                            .setUnitAmount(200L)//product.getPrice())
                             .build();
             Price price = Price.create(priceParams);
 

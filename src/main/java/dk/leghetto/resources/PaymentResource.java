@@ -1,11 +1,9 @@
 package dk.leghetto.resources;
 
 import com.stripe.exception.StripeException;
-import dk.leghetto.classes.Product;
 import dk.leghetto.classes.ProductVariant;
 import dk.leghetto.classes.PaymentRequest;
 import dk.leghetto.classes.ProductVariantRepository;
-import dk.leghetto.classes.ProductRepository;
 import dk.leghetto.classes.Order;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -23,9 +21,6 @@ public class PaymentResource {
     ProductVariantRepository productVariantRepository;
 
     @Inject
-    ProductRepository productRepository;
-
-    @Inject
     PaymentRequest paymentRequest;
 
     @POST
@@ -39,15 +34,9 @@ public class PaymentResource {
         for (Long variantId : variantIds) {
             ProductVariant productVariant = productVariantRepository.findById(variantId);
             if (productVariant != null) {
-                Product product = productRepository.findById(productVariant.getProductId());
-                if (product != null) {
-                    order.addProduct(product);
-                } else {
-                    return Response.status(Response.Status.NOT_FOUND)
-                            .entity("Product not found.")
-                            .build();
+                order.addProduct(productVariant);
                 }
-            } else {
+            else {
                 return Response.status(Response.Status.NOT_FOUND)
                         .entity("Product variant not found.")
                         .build();
