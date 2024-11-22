@@ -48,7 +48,5 @@ public class ProductVariant extends PanacheEntityBase {
     public Integer getQuantity() { return quantity; }
     public void setQuantity(Integer quantity) { this.quantity = quantity; }
 
-    public Long getProductId() {
-        return product.getId();
-    }
+
 }
