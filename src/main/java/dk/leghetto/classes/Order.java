@@ -5,7 +5,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
 public class Order {
-    ArrayList<ProductVariant> items;
+    ArrayList<ProductVariantDTO> items;
     Double coupon;
     Double sum;
 
@@ -15,12 +15,12 @@ public class Order {
         this.sum = 0.0;
     }
 
-    public void addProduct(ProductVariant product) {
+    public void addProduct(ProductVariantDTO product) {
         this.items.add(product);
         this.sum += 69;
     }
 
-    public ArrayList<ProductVariant> getItems() {
+    public ArrayList<ProductVariantDTO> getItems() {
         return items;
     }
 }

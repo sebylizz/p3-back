@@ -1,7 +1,7 @@
 package dk.leghetto.resources;
 
 import com.stripe.exception.StripeException;
-import dk.leghetto.classes.ProductVariant;
+import dk.leghetto.classes.ProductVariantDTO;
 import dk.leghetto.classes.PaymentRequest;
 import dk.leghetto.classes.ProductVariantRepository;
 import dk.leghetto.classes.Order;
@@ -32,7 +32,7 @@ public class PaymentResource {
         Order order = new Order();
 
         for (Long variantId : variantIds) {
-            ProductVariant productVariant = productVariantRepository.findById(variantId);
+            ProductVariantDTO productVariant = productVariantRepository.getDTO(variantId);
             if (productVariant != null) {
                 order.addProduct(productVariant);
                 }

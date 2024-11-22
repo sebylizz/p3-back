@@ -10,6 +10,7 @@ public class ProductVariantRepository implements PanacheRepository<ProductVarian
         ProductVariantDTO dto = new ProductVariantDTO();
         dto.setId(product.getId());
         dto.setPrice(product.getProduct().getPrice().getPrice());
+        dto.setName(product.getProduct().getName());
         return dto;
     }
 }
