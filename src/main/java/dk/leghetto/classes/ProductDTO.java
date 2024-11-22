@@ -9,21 +9,10 @@ public class ProductDTO {
     private Long categoryId;
     private Long collectionId;
     private Long price;
+    private List<ColorDTO> colors;
     private String mainImage;
-    private List<ProductColor> colors;
 
     public ProductDTO() {
-    }
-
-    public ProductDTO(Long id, String name, String description, Long categoryId, Long collectionId, Long price, String mainImage, List<ProductColor> colors) {
-        this.id = id;
-        this.name = name;
-        this.description = description;
-        this.categoryId = categoryId;
-        this.collectionId = collectionId;
-        this.price = price;
-        this.mainImage = mainImage;
-        this.colors = colors;
     }
 
     public Long getId() {
@@ -62,16 +51,83 @@ public class ProductDTO {
     public void setPrice(Long price) {
         this.price = price;
     }
+    public List<ColorDTO> getColors() {
+        return colors;
+    }
+    public void setColors(List<ColorDTO> colors) {
+        this.colors = colors;
+    }
     public String getMainImage() {
         return mainImage;
     }
     public void setMainImage(String mainImage) {
         this.mainImage = mainImage;
     }
-    public List<ProductColor> getColors() {
-        return colors;
-    }
-    public void setColors(List<ProductColor> colors) {
-        this.colors = colors;
+
+    public static class ColorDTO {
+        private Long id;
+        private String name;
+        private String mainImage;
+        private String images;
+        private List<VariantDTO> variants;
+
+        public ColorDTO() {
+        }
+
+        public Long getId() {
+            return id;
+        }
+        public void setId(Long id) {
+            this.id = id;
+        }
+        public String getName() {
+            return name;
+        }
+        public void setName(String name) {
+            this.name = name;
+        }
+        public String getMainImage() {
+            return mainImage;
+        }
+        public void setMainImage(String mainImage) {
+            this.mainImage = mainImage;
+        }
+        public String getImages() {
+            return images;
+        }
+        public void setImages(String images) {
+            this.images = images;
+        }
+        public List<VariantDTO> getVariants() {
+            return variants;
+        }
+        public void setVariants(List<VariantDTO> variants) {
+            this.variants = variants;
+        }
+
+        public static class VariantDTO {
+            private Long id;
+            private String size;
+            private Long quantity;
+            public VariantDTO() {
+            }
+
+            public Long getId() { return id; }
+            public void setId(Long id) {
+                this.id = id;
+            }
+            public String getSize() {
+            return size;
+            }
+            public void setSize(String size) {
+            this.size = size;
+            }
+            public Long getQuantity() {
+            return quantity;
+            }
+            public void setQuantity(Long quantity) {
+            this.quantity = quantity;
+            }
+        }
     }
 }

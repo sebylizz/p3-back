@@ -57,8 +57,8 @@ public class ProductResource {
         product.setName(request.getName());
         product.setDescription(request.getDescription());
         product.setIsActive(request.getIsActive());
-        product.setCategory(category); 
-        product.setCollection(collection); 
+        //product.setCategory(category); 
+        //product.setCollection(collection); 
         product.persist();
 
         // Step 3: Persist Product Colors
@@ -106,9 +106,9 @@ public class ProductResource {
 
             ProductVariant productVariant = new ProductVariant();
             productVariant.setProduct(product);
-            productVariant.setColor(productColor.getColor());
-            productVariant.setSize(size);
-            productVariant.setQuantity(variantDTO.getQuantity());
+            //productVariant.setColor(productColor.getColor());
+            //productVariant.setSize(size);
+            //productVariant.setQuantity(variantDTO.getQuantity());
             productVariant.persist();
         }
 
