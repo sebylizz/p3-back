@@ -70,7 +70,7 @@ public class Customer extends PanacheEntityBase {
     public Customer() {
     }
 
-    public Customer(String firstName, String lastName, String email, Integer telephone, String address, Integer postalCode, String password, String verificationToken, Boolean verified) {
+    public Customer(String firstName, String lastName, String email, Integer telephone, String address, Integer postalCode, String password, String verificationToken, Boolean verified, String role) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
@@ -79,10 +79,17 @@ public class Customer extends PanacheEntityBase {
         this.postalCode = postalCode;
         this.newsletter = false;
         this.password = BcryptUtil.bcryptHash(password);
-        this.role = "user";
+        if (role!=null){
+            this.role = role;
+
+        }else{
+            this.role="user";
+        }
+
         this.verificationToken = verificationToken;
         this.verified = verified;
     }
+
 
     public boolean matchPsw(String password) {
         return BcryptUtil.matches(password, this.password);

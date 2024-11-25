@@ -13,11 +13,14 @@ import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
@@ -57,6 +60,34 @@ public class CustomerResource {
         PanacheQuery<Customer> query = customerRepository.findAll();
         return query.page(offset / limit, limit).list(); // Fetch paginated customers
     }
+
+    @DELETE
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/deleteCustomer/{id}")
+    public Response deleteCustomer(@PathParam("id") Long id) {
+        try {
+            customerRepository.delete(id);
+            return Response.noContent().build(); 
+        } catch (NotFoundException e) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity("Customer not found with ID: " + id)
+                    .build();
+        }
+    }
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/getCustomerById/{id}")
+    public Response getCustomerById(@PathParam("id") Long id) {
+        Customer customer = Customer.findById(id);
+        if (customer == null) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity("Customer not found with ID: " + id)
+                    .build();
+        }
+        return Response.ok(customer).build();
+    }
+    
 
     @POST
     @Transactional
@@ -133,4 +164,51 @@ public class CustomerResource {
 
         return Response.ok("Verified").build();
     }
+
+    @POST
+    @Transactional
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Path("/addCustomerAdmin")
+    public Response addCustomerAdmin(CustomerRequest customerRequest) {
+        if (customerRepository.findByEmail(customerRequest.getEmail()) != null) {
+            return Response.status(Response.Status.CONFLICT)
+                    .entity("Email already in use")
+                    .build();
+        }
+
+        if (!"user".equals(customerRequest.getRole()) && !"admin".equals(customerRequest.getRole())) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("Invalid role specified")
+                    .build();
+        }
+
+        customerRepository.addAdmin(
+                customerRequest.getFirstName(),
+                customerRequest.getLastName(),
+                customerRequest.getEmail(),
+                customerRequest.getTelephone(),
+                customerRequest.getAddress(),
+                customerRequest.getPostalCode(),
+                customerRequest.getPassword(),
+                customerRequest.getRole());
+        return Response.ok("Customer added successfully").build();
+    }
+
+    @GET
+    @Path("/search")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response searchCustomers(@QueryParam("query") String query) {
+        if (query == null || query.trim().isEmpty()) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("Search query cannot be empty")
+                    .build();
+        }
+
+        List<Customer> customers = customerRepository.findBySearch(query);
+        return Response.ok(customers).build();
+    }
+
+
+
+
 }
