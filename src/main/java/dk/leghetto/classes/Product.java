@@ -19,7 +19,7 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "product", schema = "dev")
+@Table(name = "products", schema = "dev")
 public class Product extends PanacheEntityBase {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
