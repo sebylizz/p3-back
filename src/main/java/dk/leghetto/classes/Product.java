@@ -19,7 +19,7 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "product", schema = "dev")
+@Table(name = "products", schema = "dev")
 public class Product extends PanacheEntityBase {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -53,6 +53,10 @@ public class Product extends PanacheEntityBase {
 
     @JsonManagedReference
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<ProductColor> colors;
+
+    @JsonManagedReference
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ProductVariant> variants;
 
     public Long getId() { return id; }
@@ -78,6 +82,9 @@ public class Product extends PanacheEntityBase {
 
     public Boolean getIsDiscount() { return isDiscount; }
     public void setIsDiscount(Boolean isDiscount) { this.isDiscount = isDiscount; }
+
+    public List<ProductColor> getColors() { return colors; }
+    public void setColors(List<ProductColor> colors) { this.colors = colors; }
 
     public List<ProductVariant> getVariants() { return variants; }
     public void setVariants(List<ProductVariant> variants) { this.variants = variants; }

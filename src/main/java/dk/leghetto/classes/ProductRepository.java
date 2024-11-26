@@ -20,14 +20,14 @@ public class ProductRepository implements PanacheRepository<Product> {
                     productDTO.setCategoryId(product.getCategory().getId());
                     productDTO.setCollectionId(product.getCollection().getId());
                     productDTO.setPrice(product.getPrice().getPrice());
-                    productDTO.setColors(product.getVariants().stream()
-                            .map(variant -> {
+                    productDTO.setColors(product.getColors().stream()
+                            .map(color -> {
                                 ColorDTO colorDTO = new ColorDTO();
-                                colorDTO.setId(variant.getColor().getId());
-                                colorDTO.setName(variant.getColor().getColor().getName());
-                                colorDTO.setMainImage(variant.getColor().getMainImage());
-                                colorDTO.setImages(variant.getColor().getImages());
-                                colorDTO.setVariants(variant.getColor().getVariants().stream()
+                                colorDTO.setId(color.getId());
+                                colorDTO.setName(color.getColor().getName());
+                                colorDTO.setMainImage(color.getMainImage());
+                                colorDTO.setImages(color.getImages());
+                                colorDTO.setVariants(color.getVariants().stream()
                                         .map(colorVariant -> {
                                             ColorDTO.VariantDTO variantDTO = new ColorDTO.VariantDTO();
                                             variantDTO.setId(colorVariant.getId());
