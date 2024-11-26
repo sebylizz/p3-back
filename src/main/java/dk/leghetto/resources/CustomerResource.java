@@ -1,8 +1,18 @@
 package dk.leghetto.resources;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import jakarta.annotation.security.RolesAllowed;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.DefaultValue;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.SecurityContext;
 import dk.leghetto.classes.Customer;
@@ -12,14 +22,6 @@ import dk.leghetto.services.MailService;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.DefaultValue;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.NotFoundException;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
@@ -39,13 +41,6 @@ public class CustomerResource {
 
     @Inject
     MailService mailService;
-
-    // @GET
-    // @Produces(MediaType.APPLICATION_JSON)
-    // @Path("/getcustomers")
-    // public List<Customer> listPersons() {
-    //     return customerRepository.listAll();
-    // }
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -133,4 +128,39 @@ public class CustomerResource {
 
         return Response.ok("Verified").build();
     }
+
+    @Transactional
+    @DELETE
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/deleteCustomer")
+    @RolesAllowed({"user", "admin"})
+    public Response deleteCustomer(@Context SecurityContext ctx, @QueryParam("Id") Long Id) {
+        try {
+            if (Id == null) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("Customer ID must be provided.")
+                        .build();
+            }
+            Customer targetCustomer = customerRepository.findById(Id);
+            Customer userCustomer = customerRepository.findByEmail(ctx.getUserPrincipal().getName());
+            if (targetCustomer == null || userCustomer == null) {
+                return Response.status(Response.Status.NOT_FOUND)
+                        .entity("Customer not found")
+                        .build();
+            }
+            if (Objects.equals(targetCustomer.getId(), userCustomer.getId()) || ctx.isUserInRole("admin")) {
+                customerRepository.delete(Id);
+                return Response.ok("user deleted").build();
+            }
+        } catch(Exception e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("An error occurred while deleting the customer: " + e.getMessage())
+                    .build();
+        }
+        return Response.status(Response.Status.FORBIDDEN)
+                .entity("No permission to delete the customer")
+                .build();
+    }
+
 }
