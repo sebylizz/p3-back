@@ -1,21 +1,12 @@
 package dk.leghetto.services;
 
+import dk.leghetto.classes.Cart;
+import dk.leghetto.classes.OrderDetails;
+
 public class OrderRequest {
+    private OrderDetails details;
+    private Cart cart;
 
-    private String firstName;
-    private String lastName;
-    private String address;
-    private Integer postalCode;
-    private Integer phoneNumber;
-    private String email;
-
-    public String getFirstName() { return firstName; }
-    public String getLastName() { return lastName; }
-    public String getAddress() { return address; }
-    public Integer getPostalCode() { return postalCode; }
-    public Integer getPhoneNumber() { return phoneNumber; }
-    public String getEmail() {
-        return email;
-    }
-
+    public OrderDetails getDetails() { return details; }
+    public Cart getCart() { return cart; }
 }

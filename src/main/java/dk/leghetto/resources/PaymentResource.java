@@ -1,11 +1,11 @@
 package dk.leghetto.resources;
 
-import com.stripe.exception.StripeException;
 import dk.leghetto.classes.ProductVariantRepository;
 import dk.leghetto.classes.PaymentRequest;
-import dk.leghetto.classes.Order;
-import dk.leghetto.classes.ProductVariantDTO;
+import dk.leghetto.classes.Cart;
+import dk.leghetto.classes.OrderDetails;
 import dk.leghetto.classes.OrderDetailsRepository;
+import dk.leghetto.services.CartService;
 import dk.leghetto.services.MailService;
 import dk.leghetto.services.OrderRequest;
 import jakarta.inject.Inject;
@@ -15,8 +15,6 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-
-import java.util.List;
 
 @Path("/productpayment")
 public class PaymentResource {
@@ -28,61 +26,81 @@ public class PaymentResource {
 
     @Inject
     OrderDetailsRepository orderDetailsRepository;
+
     @Inject
     MailService mailService;
+
+    @Inject
+    CartService cartService;
+
+    /*
+     * @POST
+     * 
+     * @Transactional
+     * 
+     * @Consumes(MediaType.APPLICATION_JSON)
+     * 
+     * @Path("/carttest")
+     * public Response cart(List<Long> variantIds) throws StripeException {
+     * 
+     * Order order = new Order();
+     * 
+     * for (Long variantId : variantIds) {
+     * ProductVariantDTO productVariant =
+     * productVariantRepository.getDTO(variantId);
+     * if (productVariant != null) {
+     * order.addProduct(productVariant);
+     * }
+     * else {
+     * return Response.status(Response.Status.NOT_FOUND)
+     * .entity("Product variant not found.")
+     * .build();
+     * }
+     * }
+     * 
+     * String paymentLink = paymentRequest.paymentRequest(order);
+     * 
+     * return Response.ok(paymentLink).build();
+     * }
+     */
 
     @POST
     @Transactional
     @Consumes(MediaType.APPLICATION_JSON)
-    @Path("/carttest")
-    public Response cart(List<Long> variantIds) throws StripeException {
-
-        Order order = new Order();
-
-        for (Long variantId : variantIds) {
-            ProductVariantDTO productVariant = productVariantRepository.getDTO(variantId);
-            if (productVariant != null) {
-                order.addProduct(productVariant);
-                }
-            else {
-                return Response.status(Response.Status.NOT_FOUND)
-                        .entity("Product variant not found.")
-                        .build();
-            }
+    @Path("/generateSessionId")
+    public Response generateSessionId(String productIds) {
+        Cart cart = cartService.cartFromString(productIds);
+        try {
+            String sessionId = paymentRequest.generateSessionId(cart);
+            return Response.ok(sessionId).build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
         }
-
-        String paymentLink = paymentRequest.paymentRequest(order);
-
-        return Response.ok(paymentLink).build();
     }
 
     @POST
     @Transactional
     @Consumes(MediaType.APPLICATION_JSON)
-    @Path("/addOrder")
-    public Response addOrder(OrderRequest orderRequest) {
+    @Path("/confirmOrder")
+    public Response confirmOrder(OrderRequest orderRequest) {
 
-        orderDetailsRepository.add(
-                orderRequest.getFirstName(),
-                orderRequest.getLastName(),
-                orderRequest.getAddress(),
-                orderRequest.getPostalCode(),
-                orderRequest.getPhoneNumber(),
-                orderRequest.getEmail()
-        );
+        OrderDetails orderDetails = orderRequest.getDetails();
+        Cart cart = orderRequest.getCart();
 
-        String body = "Hallo bøsser i har fået en ny ordre til " + orderRequest.getFirstName() + ",\n\n"
+        String body = "Hallo bøsser i har fået en ny ordre til " + orderDetails.getFirstName() + ",\n\n"
                 + "Ordre detaljer:\n\n"
-                + "First name: " + orderRequest.getFirstName() + "\n"
-                + "Last name: " + orderRequest.getLastName() + "\n"
-                + "Adresse: " + orderRequest.getAddress() + "\n"
-                + "Post nummer: " + orderRequest.getPostalCode() + "\n"
-                + "Telefonnummer: " + orderRequest.getPhoneNumber() + "\n"
-                + "Email: " + orderRequest.getEmail() + "\n\n"
+                + "First name: " + orderDetails.getFirstName() + "\n"
+                + "Last name: " + orderDetails.getLastName() + "\n"
+                + "Adresse: " + orderDetails.getAddress() + "\n"
+                + "Post nummer: " + orderDetails.getPostalCode() + "\n"
+                + "Telefonnummer: " + orderDetails.getPhoneNumber() + "\n"
+                + "Email: " + orderDetails.getEmail() + "\n\n"
+                + "Ordre indhold:\n\n"
+                + cart.toString() + "\n\n"
                 + "Send den afsted faggets!";
 
-        mailService.sendMail("emil624g@gmail.com", "New order", body);
+        // mailService.sendMail("emil624g@gmail.com", "New order", body);
 
-        return Response.ok("Order created").build();
+        return Response.ok(body).build();
     }
 }
