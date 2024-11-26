@@ -5,9 +5,13 @@ import dk.leghetto.classes.PaymentRequest;
 import dk.leghetto.classes.Cart;
 import dk.leghetto.classes.OrderDetails;
 import dk.leghetto.classes.OrderDetailsRepository;
+import dk.leghetto.classes.ProductVariantDTO;
+import dk.leghetto.classes.ProductVariant;
+import dk.leghetto.classes.OrderItemsRepository;
 import dk.leghetto.services.CartService;
 import dk.leghetto.services.MailService;
 import dk.leghetto.services.OrderRequest;
+import io.quarkus.datasource.runtime.DataSourcesBuildTimeConfig;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.POST;
@@ -19,7 +23,7 @@ import jakarta.ws.rs.core.Response;
 @Path("/productpayment")
 public class PaymentResource {
     @Inject
-    ProductVariantRepository productVariantRepository;
+    ProductVariantRepository pvr;
 
     @Inject
     PaymentRequest paymentRequest;
@@ -32,6 +36,12 @@ public class PaymentResource {
 
     @Inject
     CartService cartService;
+
+    @Inject
+    OrderItemsRepository orderItemsRepository;
+
+    @Inject
+    DataSourcesBuildTimeConfig dataSourcesBuildTimeConfig;
 
     /*
      * @POST
@@ -78,6 +88,7 @@ public class PaymentResource {
         }
     }
 
+    // husk at dobbelttjekke confirmed payment
     @POST
     @Transactional
     @Consumes(MediaType.APPLICATION_JSON)
@@ -85,7 +96,44 @@ public class PaymentResource {
     public Response confirmOrder(OrderRequest orderRequest) {
 
         OrderDetails orderDetails = orderRequest.getDetails();
-        Cart cart = orderRequest.getCart();
+        Cart cart = cartService.cartFromString(orderRequest.getProductIds());
+
+        Long id = orderDetailsRepository.add(
+                orderDetails.getFirstName(),
+                orderDetails.getLastName(),
+                orderDetails.getAddress(),
+                orderDetails.getPostalCode(),
+                orderDetails.getPhoneNumber(),
+                orderDetails.getEmail()
+        );
+
+        for (ProductVariantDTO variant : cart.getItems()) {
+            Long orderDetailsId = id;
+            Long variantId = variant.getId();
+            Long price = variant.getPrice();
+            orderItemsRepository.add(
+                    orderDetailsId,
+                    variantId,
+                    price
+            );
+            ProductVariant pv = pvr.findById(variantId);
+            try {
+                Long currentQuantity = pv.getQuantity();
+                if(currentQuantity <= 0) {
+                    throw new Exception("No more product left");
+                }
+                if (currentQuantity == 5) {
+                    mailService.sendMail("ekkr", "Low stock", "Faggets der er low stock på denne vare: " + pv.getProduct().getName());
+                }
+                if (currentQuantity == 1) {
+                    mailService.sendMail("ekkr", "Out of stock", "Faggets denne vare er out of stock: " + pv.getProduct().getName());
+                }
+                pv.setQuantity(currentQuantity - 1);
+            } catch(Exception e) {
+                return Response.serverError().entity(e).build();
+            }
+            pv.persist();
+        }
 
         String body = "Hallo bøsser i har fået en ny ordre til " + orderDetails.getFirstName() + ",\n\n"
                 + "Ordre detaljer:\n\n"
@@ -96,10 +144,10 @@ public class PaymentResource {
                 + "Telefonnummer: " + orderDetails.getPhoneNumber() + "\n"
                 + "Email: " + orderDetails.getEmail() + "\n\n"
                 + "Ordre indhold:\n\n"
-                + cart.toString() + "\n\n"
+                + cart.getItems().getFirst().getName() + "\n\n"
                 + "Send den afsted faggets!";
 
-        // mailService.sendMail("emil624g@gmail.com", "New order", body);
+        mailService.sendMail("ekkr", "New order", body);
 
         return Response.ok(body).build();
     }

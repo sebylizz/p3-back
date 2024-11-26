@@ -34,24 +34,32 @@ public class OrderDetails extends PanacheEntityBase {
     @Column(name = "email")
     private String email;
 
+    @Column(name = "user_id")
+    private Long userId;
+
     public OrderDetails() {
 
     }
 
-    public OrderDetails(String firstName, String lastName, String address, Integer postalCode, Integer phoneNumber, String email) {
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.address = address;
-        this.postalCode = postalCode;
-        this.phoneNumber = phoneNumber;
-        this.email = email;
+    public OrderDetails create(String firstName, String lastName, String address, Integer postalCode, Integer phoneNumber, String email) {
+        OrderDetails orderDetails = new OrderDetails();
+        orderDetails.firstName = firstName;
+        orderDetails.lastName = lastName;
+        orderDetails.address = address;
+        orderDetails.postalCode = postalCode;
+        orderDetails.phoneNumber = phoneNumber;
+        orderDetails.email = email;
+
+        return orderDetails;
     }
 
+    public Long getId() { return id; }
     public String getFirstName() { return firstName; }
     public String getLastName() { return lastName; }
     public String getAddress() { return address; }
     public Integer getPostalCode() { return postalCode; }
     public Integer getPhoneNumber() { return phoneNumber; }
     public String getEmail() { return email; }
+    public Long getUserId() { return userId; }
 
 }

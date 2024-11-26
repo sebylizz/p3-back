@@ -5,8 +5,8 @@ import dk.leghetto.classes.OrderDetails;
 
 public class OrderRequest {
     private OrderDetails details;
-    private Cart cart;
+    private String productIds;
 
     public OrderDetails getDetails() { return details; }
-    public Cart getCart() { return cart; }
+    public String getProductIds() { return productIds; }
 }
