@@ -4,7 +4,15 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import jakarta.annotation.security.RolesAllowed;
-import jakarta.ws.rs.*;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.DefaultValue;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.SecurityContext;
 import dk.leghetto.classes.Customer;
@@ -33,13 +41,6 @@ public class CustomerResource {
 
     @Inject
     MailService mailService;
-
-    // @GET
-    // @Produces(MediaType.APPLICATION_JSON)
-    // @Path("/getcustomers")
-    // public List<Customer> listPersons() {
-    //     return customerRepository.listAll();
-    // }
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
