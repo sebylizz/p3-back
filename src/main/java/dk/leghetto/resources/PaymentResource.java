@@ -1,10 +1,13 @@
 package dk.leghetto.resources;
 
 import com.stripe.exception.StripeException;
-import dk.leghetto.classes.ProductVariantDTO;
-import dk.leghetto.classes.PaymentRequest;
 import dk.leghetto.classes.ProductVariantRepository;
+import dk.leghetto.classes.PaymentRequest;
 import dk.leghetto.classes.Order;
+import dk.leghetto.classes.ProductVariantDTO;
+import dk.leghetto.classes.OrderDetailsRepository;
+import dk.leghetto.services.MailService;
+import dk.leghetto.services.OrderRequest;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.POST;
@@ -22,6 +25,11 @@ public class PaymentResource {
 
     @Inject
     PaymentRequest paymentRequest;
+
+    @Inject
+    OrderDetailsRepository orderDetailsRepository;
+    @Inject
+    MailService mailService;
 
     @POST
     @Transactional
@@ -46,5 +54,35 @@ public class PaymentResource {
         String paymentLink = paymentRequest.paymentRequest(order);
 
         return Response.ok(paymentLink).build();
+    }
+
+    @POST
+    @Transactional
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Path("/addOrder")
+    public Response addOrder(OrderRequest orderRequest) {
+
+        orderDetailsRepository.add(
+                orderRequest.getFirstName(),
+                orderRequest.getLastName(),
+                orderRequest.getAddress(),
+                orderRequest.getPostalCode(),
+                orderRequest.getPhoneNumber(),
+                orderRequest.getEmail()
+        );
+
+        String body = "Hallo bøsser i har fået en ny ordre til " + orderRequest.getFirstName() + ",\n\n"
+                + "Ordre detaljer:\n\n"
+                + "First name: " + orderRequest.getFirstName() + "\n"
+                + "Last name: " + orderRequest.getLastName() + "\n"
+                + "Adresse: " + orderRequest.getAddress() + "\n"
+                + "Post nummer: " + orderRequest.getPostalCode() + "\n"
+                + "Telefonnummer: " + orderRequest.getPhoneNumber() + "\n"
+                + "Email: " + orderRequest.getEmail() + "\n\n"
+                + "Send den afsted faggets!";
+
+        mailService.sendMail("emil624g@gmail.com", "New order", body);
+
+        return Response.ok("Order created").build();
     }
 }
