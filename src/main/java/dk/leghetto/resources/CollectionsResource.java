@@ -12,12 +12,12 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 
-@Path("/colors")
+@Path("/collections")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-public class CollectionResource {
+public class CollectionsResource {
 
-    @Path("/getCollection")
+    @Path("/getCollections")
     @GET
     public Response getCollection() {
         List<Collection> collcetion = Collection.listAll(); 

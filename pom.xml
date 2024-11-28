@@ -87,7 +87,12 @@
             <artifactId>stripe-java</artifactId>
             <version>27.0.0</version>
         </dependency>
-    </dependencies>
+        <dependency>
+            <groupId>org.passay</groupId>
+            <artifactId>passay</artifactId>
+            <version>1.6.6</version>
+        </dependency>
+        </dependencies>
 
     <build>
         <plugins>

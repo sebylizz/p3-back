@@ -7,6 +7,7 @@ import jakarta.ws.rs.NotFoundException;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import org.passay.*;
 
 @ApplicationScoped
 public class CustomerRepository implements PanacheRepository<Customer> {
@@ -53,6 +54,25 @@ public class CustomerRepository implements PanacheRepository<Customer> {
                 "%" + searchString.toLowerCase() + "%")
                 .list();
     }
+
+    public boolean checkCustomerPassword(String password) {
+        if (password == null) {
+            throw new IllegalArgumentException("Password cannot be null");
+        }
+
+        PasswordValidator validator = new PasswordValidator(
+                new LengthRule(8, 16),           
+                new CharacterRule(EnglishCharacterData.UpperCase, 1), 
+                new CharacterRule(EnglishCharacterData.LowerCase, 1), 
+                new CharacterRule(EnglishCharacterData.Digit, 1),     
+                new CharacterRule(EnglishCharacterData.Special, 1),   
+                new WhitespaceRule()            
+        );
+
+        RuleResult result = validator.validate(new PasswordData(password));
+        return result.isValid();
+    }
+
     
     
 }

@@ -1,6 +1,7 @@
 package dk.leghetto.resources;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import jakarta.annotation.security.RolesAllowed;
@@ -13,13 +14,17 @@ import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.SecurityContext;
 import dk.leghetto.classes.Customer;
 import dk.leghetto.classes.CustomerRepository;
 import dk.leghetto.services.CustomerRequest;
 import dk.leghetto.services.MailService;
+import io.quarkus.elytron.security.common.BcryptUtil;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
+import io.quarkus.panache.common.Page;
+import io.quarkus.panache.common.Parameters;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.Consumes;
@@ -56,12 +61,26 @@ public class CustomerResource {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/getcustomers")
-    public List<Customer> listCustomers(
+    public Response listCustomers(
             @QueryParam("offset") @DefaultValue("0") int offset,
             @QueryParam("limit") @DefaultValue("10") int limit) {
-        
+
         PanacheQuery<Customer> query = customerRepository.findAll();
-        return query.page(offset / limit, limit).list(); // Fetch paginated customers
+
+        // Calculate the page index correctly
+        int pageIndex = offset / limit;
+
+        query.page(Page.of(pageIndex, limit));
+
+        // Fetch paginated customers
+        List<Customer> customers = query.list();
+
+        // Return paginated results along with metadata
+        return Response.ok(Map.of(
+                "customers", customers,
+                "total", query.count(), // Total number of customers
+                "offset", offset,
+                "limit", limit)).build();
     }
 
     @DELETE
@@ -70,7 +89,7 @@ public class CustomerResource {
     public Response deleteCustomer(@PathParam("id") Long id) {
         try {
             customerRepository.delete(id);
-            return Response.noContent().build(); 
+            return Response.noContent().build();
         } catch (NotFoundException e) {
             return Response.status(Response.Status.NOT_FOUND)
                     .entity("Customer not found with ID: " + id)
@@ -90,7 +109,6 @@ public class CustomerResource {
         }
         return Response.ok(customer).build();
     }
-    
 
     @POST
     @Transactional
@@ -116,7 +134,7 @@ public class CustomerResource {
                 customerRequest.getPostalCode(),
                 customerRequest.getPassword(),
                 verificationToken,
-                false); //for at sætte verified
+                false); // for at sætte verified
 
         String body = "Hello " + customerRequest.getFirstName() + ",\n\n"
                 + "Welcome to Leghetto! We are delighted to have you join our community.\n\n"
@@ -129,6 +147,7 @@ public class CustomerResource {
         mailService.sendMail(customerRequest.getEmail(), "Welcome to Leghetto", body);
         return Response.ok().build();
     }
+
     @POST
     @Path("/updateCustomer")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -136,8 +155,9 @@ public class CustomerResource {
     public Response updateCustomer(Customer customer) {
         try {
             // Use getters to access fields
-            Customer updatedCustomer = Customer.updateCustomer(customer.getId(), customer.getFirstName(), customer.getLastName(), customer.getEmail());
-            return Response.ok(updatedCustomer).build();  // Return updated customer as response
+            Customer updatedCustomer = Customer.updateCustomer(customer.getId(), customer.getFirstName(),
+                    customer.getLastName(), customer.getEmail());
+            return Response.ok(updatedCustomer).build(); // Return updated customer as response
         } catch (NotFoundException e) {
             return Response.status(Response.Status.NOT_FOUND)
                     .entity("Customer not found: " + e.getMessage())
@@ -200,26 +220,36 @@ public class CustomerResource {
     @GET
     @Path("/search")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response searchCustomers(@QueryParam("query") String query) {
+    public Response searchCustomers(
+            @QueryParam("query") String query,
+            @QueryParam("offset") @DefaultValue("0") int offset,
+            @QueryParam("limit") @DefaultValue("10") int limit) {
+
         if (query == null || query.trim().isEmpty()) {
-            return Response.status(Response.Status.BAD_REQUEST)
-                    .entity("Search query cannot be empty")
-                    .build();
+            throw new WebApplicationException("Search query cannot be empty", Response.Status.BAD_REQUEST);
         }
 
-        List<Customer> customers = customerRepository.findBySearch(query);
-        return Response.ok(customers).build();
+        PanacheQuery<Customer> searchQuery = customerRepository.find(
+                "LOWER(firstName) LIKE :query OR LOWER(email) LIKE :query OR LOWER(lastName) LIKE :query",
+                Parameters.with("query", "%" + query.trim().toLowerCase() + "%"));
+
+        searchQuery.page(Page.of(offset / limit, limit));
+        List<Customer> paginatedCustomers = searchQuery.list();
+
+        return Response.ok(Map.of(
+                "customers", paginatedCustomers,
+                "total", searchQuery.count(),
+                "pageCount", searchQuery.pageCount(),
+                "offset", offset,
+                "limit", limit)).build();
     }
-
-
-
 
     @Transactional
     @DELETE
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/deleteCustomer")
-    @RolesAllowed({"user", "admin"})
+    @RolesAllowed({ "user", "admin" })
     public Response deleteCustomer(@Context SecurityContext ctx, @QueryParam("Id") Long Id) {
         try {
             if (Id == null) {
@@ -238,7 +268,7 @@ public class CustomerResource {
                 customerRepository.delete(Id);
                 return Response.ok("user deleted").build();
             }
-        } catch(Exception e) {
+        } catch (Exception e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                     .entity("An error occurred while deleting the customer: " + e.getMessage())
                     .build();
@@ -246,6 +276,73 @@ public class CustomerResource {
         return Response.status(Response.Status.FORBIDDEN)
                 .entity("No permission to delete the customer")
                 .build();
+    }
+
+    @PUT
+    @Path("/updateCustomer/{id}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Transactional
+    public Response updateCustomerById(@PathParam("id") Long id, Customer customer) {
+        try {
+            System.out.println("Received Customer Payload: " + customer);
+        System.out.println("Received Password: " + customer.getPasswordHash());
+        System.out.println("Received Address: " + customer.getaddress());
+            // Find existing customer
+            Customer existingCustomer = Customer.findById(id);
+            if (existingCustomer == null) {
+                throw new NotFoundException("Customer not found with ID: " + id);
+            }
+            
+            // Validate and set password only if provided
+            if (customer.getPasswordHash() != null && !customer.getPasswordHash().isBlank()) {
+                System.out.println("Received Password Hash: " + customer.getPasswordHash());
+                if (customerRepository.checkCustomerPassword(customer.getPasswordHash())) {
+                    existingCustomer.setPassword((customer.getPasswordHash()));
+                    System.out.println("Password updated successfully.");
+
+                }else{
+
+                    System.out.println("Password does not meet security requirements.");
+                    return Response.status(Response.Status.BAD_REQUEST)
+                            .entity("Password does not meet security requirements.")
+                            .build();
+
+                }
+
+
+            }
+            // if (customerRepository.findByEmail(customer.getEmail()) != null) {
+            //     Customer existingEmailOwner = customerRepository.findByEmail(customer.getEmail());
+            //     if (!existingEmailOwner.getId().equals(customer.getId())) {
+            //         return Response.status(Response.Status.CONFLICT)
+            //                 .entity("Email already in use by another customer")
+            //                 .build();
+            //     }
+            // }
+
+            // Update other fields
+            existingCustomer.setFirstName(customer.getFirstName());
+            existingCustomer.setLastName(customer.getLastName());
+            existingCustomer.setAddress(customer.getaddress());
+            existingCustomer.setPostalCode(customer.getPostalCode());
+            existingCustomer.setTelephone(customer.getTelephone());
+            existingCustomer.setEmail(customer.getEmail());
+            existingCustomer.setNewsletter(customer.getNewsletter());
+            existingCustomer.setRole(customer.getRole());
+
+            // existingCustomer.persist();
+
+            return Response.ok(existingCustomer).build();
+        } catch (NotFoundException e) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity("Customer not found: " + e.getMessage())
+                    .build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Error updating customer: " + e.getMessage())
+                    .build();
+        }
     }
 
 }

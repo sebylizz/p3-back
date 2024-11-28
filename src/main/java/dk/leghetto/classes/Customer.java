@@ -17,6 +17,8 @@ import jakarta.ws.rs.NotFoundException;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 @Entity
 @UserDefinition
 @Table(name = "users")
@@ -79,7 +81,7 @@ public class Customer extends PanacheEntityBase {
         this.postalCode = postalCode;
         this.newsletter = false;
         this.password = BcryptUtil.bcryptHash(password);
-        if (role!=null){
+        if (role!=null && role!="user"){
             this.role = role;
 
         }else{
@@ -125,6 +127,33 @@ public class Customer extends PanacheEntityBase {
 
     public String getRole() {
         return role;
+    }
+
+    public String getaddress(){
+        return address;
+    }
+
+    public Integer getPostalCode(){
+        return postalCode;
+    }
+
+
+    public void setRole(String role){
+        this.role=role;
+    }
+    public void setTelephone(Integer telephone){
+        this.telephone=telephone;
+    }
+
+    public void setNewsletter(Boolean newsletter){
+        this.newsletter=newsletter;
+    }
+    public void setPostalCode(Integer postalcode){
+        this.postalCode=postalcode;
+
+    }
+    public void setAddress(String address){
+        this.address=address;
     }
 
     public void setFirstName(String firstName) {
