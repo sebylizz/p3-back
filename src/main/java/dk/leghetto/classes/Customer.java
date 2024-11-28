@@ -17,6 +17,8 @@ import jakarta.ws.rs.NotFoundException;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 @Entity
 @UserDefinition
 @Table(name = "users")
@@ -70,7 +72,7 @@ public class Customer extends PanacheEntityBase {
     public Customer() {
     }
 
-    public Customer(String firstName, String lastName, String email, Integer telephone, String address, Integer postalCode, String password, String verificationToken, Boolean verified) {
+    public Customer(String firstName, String lastName, String email, Integer telephone, String address, Integer postalCode, String password, String verificationToken, Boolean verified, String role) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
@@ -79,10 +81,17 @@ public class Customer extends PanacheEntityBase {
         this.postalCode = postalCode;
         this.newsletter = false;
         this.password = BcryptUtil.bcryptHash(password);
-        this.role = "user";
+        if (role!=null && role!="user"){
+            this.role = role;
+
+        }else{
+            this.role="user";
+        }
+
         this.verificationToken = verificationToken;
         this.verified = verified;
     }
+
 
     public boolean matchPsw(String password) {
         return BcryptUtil.matches(password, this.password);
@@ -118,6 +127,33 @@ public class Customer extends PanacheEntityBase {
 
     public String getRole() {
         return role;
+    }
+
+    public String getaddress(){
+        return address;
+    }
+
+    public Integer getPostalCode(){
+        return postalCode;
+    }
+
+
+    public void setRole(String role){
+        this.role=role;
+    }
+    public void setTelephone(Integer telephone){
+        this.telephone=telephone;
+    }
+
+    public void setNewsletter(Boolean newsletter){
+        this.newsletter=newsletter;
+    }
+    public void setPostalCode(Integer postalcode){
+        this.postalCode=postalcode;
+
+    }
+    public void setAddress(String address){
+        this.address=address;
     }
 
     public void setFirstName(String firstName) {
