@@ -11,10 +11,9 @@ public class CartService {
     @Inject
     ProductVariantRepository pvr;
 
-    public Cart cartFromString(String s) {
-        String[] l = s.split(",");
+    public Cart cartFromStrings(String[] s) {
         Cart c = new Cart();
-        for (String i : l) {
+        for (String i : s) {
             ProductVariantDTO p = pvr.getDTO(Long.parseLong(i.split("/")[2]));
             c.addProduct(p);
         }
