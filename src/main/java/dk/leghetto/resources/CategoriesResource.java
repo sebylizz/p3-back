@@ -1,4 +1,5 @@
 package dk.leghetto.resources;
+
 import jakarta.ws.rs.core.Response;
 
 import java.util.List;
@@ -21,7 +22,7 @@ public class CategoriesResource {
     @Path("/getCategories")
     @GET
     public Response getCategories() {
-        List<Category> category = Category.listAll(); 
+        List<Category> category = Category.listAll();
         return Response.ok(category).build();
     }
 
@@ -30,16 +31,30 @@ public class CategoriesResource {
     @POST
     @Transactional
     public Response addCategory(Category category) {
+        if (category.getName() == null || category.getName().trim().isEmpty()) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("Category name cannot be null or empty.")
+                    .build();
+        }
         Category existingCategory = Category.find("name", category.getName()).firstResult();
         if (existingCategory != null) {
             return Response.status(Response.Status.CONFLICT)
-                    .entity("Color with the name '" + category.getName() + "' already exists.")
+                    .entity("Category with the name '" + category.getName() + "' already exists.")
                     .build();
         }
+        if (category.getParentCategory() != null && category.getParentCategory().getId() != null) {
+            Category parentCategory = Category.findById(category.getParentCategory().getId());
+            if (parentCategory == null) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("Parent category with ID '" + category.getParentCategory().getId()
+                                + "' does not exist.")
+                        .build();
+            }
+            category.setParentCategory(parentCategory);
+        }
+
         category.persist();
         return Response.status(Response.Status.CREATED).entity(category).build();
     }
-
-
 
 }

@@ -63,7 +63,7 @@ public class ProductRepository implements PanacheRepository<Product> {
     }
 
     public List<ProductDTO> getAllProducts() {
-        List<Product> products = Product.listAll(); 
+        List<Product> products = Product.listAll();
         return products.stream()
                 .map(product -> {
                     ProductDTO productDTO = new ProductDTO();
@@ -77,12 +77,10 @@ public class ProductRepository implements PanacheRepository<Product> {
                     if (product.getCollection() != null) {
                         productDTO.setCollectionId(product.getCollection().getId());
                     }
-    
 
                     if (product.getPrice() != null) {
                         productDTO.setPrice(product.getPrice().getPrice());
                     }
-    
 
                     productDTO.setColors(product.getColors().stream()
                             .map(color -> {
@@ -94,7 +92,7 @@ public class ProductRepository implements PanacheRepository<Product> {
                                 colorDTO.setMainImage(color.getMainImage());
                                 colorDTO.setImages(color.getImages());
                                 colorDTO.setTotalSales(color.getTotalSales());
-    
+
                                 colorDTO.setVariants(color.getVariants().stream()
                                         .map(colorVariant -> {
                                             ColorDTO.VariantDTO variantDTO = new ColorDTO.VariantDTO();
@@ -105,18 +103,17 @@ public class ProductRepository implements PanacheRepository<Product> {
                                             variantDTO.setQuantity(colorVariant.getQuantity());
                                             return variantDTO;
                                         }).collect(Collectors.toList()));
-    
+
                                 return colorDTO;
                             }).collect(Collectors.toList()));
-    
+
                     if (!product.getVariants().isEmpty() && product.getVariants().get(0).getColor() != null) {
                         productDTO.setMainImage(product.getVariants().get(0).getColor().getMainImage());
                     }
-    
+
                     return productDTO;
                 }).collect(Collectors.toList());
     }
-    
 
     public ProductPricesDTO getProductWithPricesById(Long productId) {
 
@@ -126,13 +123,11 @@ public class ProductRepository implements PanacheRepository<Product> {
             throw new NotFoundException("Product with id " + productId + " not found");
         }
 
-    
         ProductPricesDTO productDTO = new ProductPricesDTO();
         productDTO.setId(product.getId());
         productDTO.setName(product.getName());
         productDTO.setDescription(product.getDescription());
         productDTO.setIsActive(product.getIsActive());
-
 
         Category category = product.getCategory();
         if (category != null) {
@@ -141,28 +136,25 @@ public class ProductRepository implements PanacheRepository<Product> {
                     category.getParentCategory() != null ? category.getParentCategory().getId() : null);
         }
 
-
         if (product.getCollection() != null) {
             productDTO.setCollectionId(product.getCollection().getId());
         }
 
-
         productDTO.setColors(product.getColors().stream()
                 .map(color -> {
                     ProductPricesDTO.ColorDTO colorDTO = new ProductPricesDTO.ColorDTO();
-                    colorDTO.setId(color.getId()); 
+                    colorDTO.setId(color.getId());
                     colorDTO.setProduct(product.getId());
-                    colorDTO.setColor(color.getColor().getId()); 
+                    colorDTO.setColor(color.getColor().getId());
                     colorDTO.setMainImage(color.getMainImage());
                     colorDTO.setImages(color.getImages());
                     colorDTO.setTotalSales(color.getTotalSales());
-
 
                     colorDTO.setVariants(color.getVariants().stream()
                             .map(variant -> {
                                 ProductPricesDTO.ColorDTO.VariantDTO variantDTO = new ProductPricesDTO.ColorDTO.VariantDTO();
                                 variantDTO.setId(variant.getId());
-                                variantDTO.setColorId(color.getColor()); 
+                                variantDTO.setColorId(color.getColor());
                                 variantDTO.setSizeId(variant.getSize() != null ? variant.getSize().getId() : null);
                                 variantDTO.setQuantity(variant.getQuantity());
                                 return variantDTO;
@@ -170,7 +162,6 @@ public class ProductRepository implements PanacheRepository<Product> {
 
                     return colorDTO;
                 }).collect(Collectors.toList()));
-
 
         productDTO.setPrices(product.getPrices().stream()
                 .map(price -> {
@@ -208,20 +199,17 @@ public class ProductRepository implements PanacheRepository<Product> {
             if (!dtoPriceIds.contains(existingPrice.getId())) {
                 if (!existingPrice.getIsDiscount()) {
                     boolean isCurrentNonDiscount = existingPrices.stream()
-                        .filter(price -> !price.getIsDiscount())
-                        .anyMatch(price ->
-                            price.getStartDate().isBefore(LocalDate.now().plusDays(1)) &&
-                            (price.getEndDate() == null || price.getEndDate().isAfter(LocalDate.now())) &&
-                            price.equals(existingPrice)
-                        );
-                    
+                            .filter(price -> !price.getIsDiscount())
+                            .anyMatch(price -> price.getStartDate().isBefore(LocalDate.now().plusDays(1)) &&
+                                    (price.getEndDate() == null || price.getEndDate().isAfter(LocalDate.now())) &&
+                                    price.equals(existingPrice));
+
                     if (isCurrentNonDiscount) {
                         throw new IllegalArgumentException("Cannot delete the current active non-discount price.");
                     }
                 }
                 pricesToDelete.add(existingPrice);
-            }            
-             else {
+            } else {
                 ProductPricesDTO.PriceDTO matchingDTO = priceDTOs.stream()
                         .filter(dto -> existingPrice.getId().equals(dto.getId()))
                         .findFirst()
@@ -386,8 +374,11 @@ public class ProductRepository implements PanacheRepository<Product> {
         if (colorEntity == null) {
             throw new IllegalArgumentException("Invalid color ID: " + colorDTO.getColor());
         }
-
         newColor.setColor(colorEntity);
+
+        if (newColor.getVariants() == null) {
+            newColor.setVariants(new ArrayList<>());
+        }
 
         for (ProductPricesDTO.ColorDTO.VariantDTO variantDTO : colorDTO.getVariants()) {
             addNewVariant(newColor, variantDTO, newColor.getVariants());
@@ -397,14 +388,17 @@ public class ProductRepository implements PanacheRepository<Product> {
     }
 
     private void addNewVariant(ProductColor color, ProductPricesDTO.ColorDTO.VariantDTO variantDTO,
-        List<ProductVariant> variantsToAdd) {
-    ProductVariant newVariant = new ProductVariant();
-    newVariant.setSize(ProductSize.findById(variantDTO.getSizeId()));
-    newVariant.setQuantity(variantDTO.getQuantity());
-    newVariant.setColor(color); 
-    newVariant.setProduct(color.getProduct()); 
-    variantsToAdd.add(newVariant);
-}
+            List<ProductVariant> variantsToAdd) {
+        if (variantsToAdd == null) {
+            variantsToAdd = new ArrayList<>();
+        }
 
+        ProductVariant newVariant = new ProductVariant();
+        newVariant.setSize(ProductSize.findById(variantDTO.getSizeId()));
+        newVariant.setQuantity(variantDTO.getQuantity());
+        newVariant.setColor(color);
+        newVariant.setProduct(color.getProduct());
+        variantsToAdd.add(newVariant);
+    }
 
 }

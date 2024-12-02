@@ -65,7 +65,7 @@ public class ProductResource {
     public Response getAllProducts() {
         return Response.ok(pr.getAllActiveProducts()).build();
     }
-    
+
     @RolesAllowed("admin")
     @Path("/getAllAdmin")
     @GET
