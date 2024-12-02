@@ -59,6 +59,7 @@ public class CustomerResource {
     @Inject
     MailService mailService;
 
+    @RolesAllowed("admin")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/getcustomers")
@@ -81,6 +82,7 @@ public class CustomerResource {
                 "limit", limit)).build();
     }
 
+    @RolesAllowed("admin")
     @DELETE
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/deleteCustomer/{id}")
@@ -95,6 +97,7 @@ public class CustomerResource {
         }
     }
 
+    @RolesAllowed("admin")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/getCustomerById/{id}")
@@ -186,6 +189,7 @@ public class CustomerResource {
         return Response.ok("Verified").build();
     }
 
+    @RolesAllowed("admin")
     @POST
     @Transactional
     @Consumes(MediaType.APPLICATION_JSON)
@@ -219,9 +223,12 @@ public class CustomerResource {
                 customerRequest.getPassword(),
                 customerRequest.getRole());
 
-        return Response.ok("Customer added successfully").build();
+                return Response.status(Response.Status.CREATED)
+                .entity("Customer added successfully")
+                .build();
     }
 
+    @RolesAllowed("admin")
     @GET
     @Path("/search")
     @Produces(MediaType.APPLICATION_JSON)
@@ -283,6 +290,7 @@ public class CustomerResource {
                 .build();
     }
 
+    @RolesAllowed("admin")
     @PUT
     @Path("/updateCustomer/{id}")
     @Consumes(MediaType.APPLICATION_JSON)

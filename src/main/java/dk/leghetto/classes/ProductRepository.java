@@ -62,6 +62,62 @@ public class ProductRepository implements PanacheRepository<Product> {
                 }).collect(Collectors.toList());
     }
 
+    public List<ProductDTO> getAllProducts() {
+        List<Product> products = Product.listAll(); 
+        return products.stream()
+                .map(product -> {
+                    ProductDTO productDTO = new ProductDTO();
+                    productDTO.setId(product.getId());
+                    productDTO.setName(product.getName());
+                    productDTO.setDescription(product.getDescription());
+
+                    if (product.getCategory() != null) {
+                        productDTO.setCategoryId(product.getCategory().getId());
+                    }
+                    if (product.getCollection() != null) {
+                        productDTO.setCollectionId(product.getCollection().getId());
+                    }
+    
+
+                    if (product.getPrice() != null) {
+                        productDTO.setPrice(product.getPrice().getPrice());
+                    }
+    
+
+                    productDTO.setColors(product.getColors().stream()
+                            .map(color -> {
+                                ColorDTO colorDTO = new ColorDTO();
+                                colorDTO.setId(color.getId());
+                                if (color.getColor() != null) {
+                                    colorDTO.setName(color.getColor().getName());
+                                }
+                                colorDTO.setMainImage(color.getMainImage());
+                                colorDTO.setImages(color.getImages());
+                                colorDTO.setTotalSales(color.getTotalSales());
+    
+                                colorDTO.setVariants(color.getVariants().stream()
+                                        .map(colorVariant -> {
+                                            ColorDTO.VariantDTO variantDTO = new ColorDTO.VariantDTO();
+                                            variantDTO.setId(colorVariant.getId());
+                                            if (colorVariant.getSize() != null) {
+                                                variantDTO.setSize(colorVariant.getSize().getName());
+                                            }
+                                            variantDTO.setQuantity(colorVariant.getQuantity());
+                                            return variantDTO;
+                                        }).collect(Collectors.toList()));
+    
+                                return colorDTO;
+                            }).collect(Collectors.toList()));
+    
+                    if (!product.getVariants().isEmpty() && product.getVariants().get(0).getColor() != null) {
+                        productDTO.setMainImage(product.getVariants().get(0).getColor().getMainImage());
+                    }
+    
+                    return productDTO;
+                }).collect(Collectors.toList());
+    }
+    
+
     public ProductPricesDTO getProductWithPricesById(Long productId) {
 
         Product product = find("id", productId).firstResult();
@@ -150,11 +206,22 @@ public class ProductRepository implements PanacheRepository<Product> {
 
         for (ProductPrice existingPrice : existingPrices) {
             if (!dtoPriceIds.contains(existingPrice.getId())) {
-                if (!existingPrice.getIsDiscount() && existingPrice.getEndDate() == null) {
-                    throw new IllegalArgumentException("Cannot delete the current active non-discount price.");
+                if (!existingPrice.getIsDiscount()) {
+                    boolean isCurrentNonDiscount = existingPrices.stream()
+                        .filter(price -> !price.getIsDiscount())
+                        .anyMatch(price ->
+                            price.getStartDate().isBefore(LocalDate.now().plusDays(1)) &&
+                            (price.getEndDate() == null || price.getEndDate().isAfter(LocalDate.now())) &&
+                            price.equals(existingPrice)
+                        );
+                    
+                    if (isCurrentNonDiscount) {
+                        throw new IllegalArgumentException("Cannot delete the current active non-discount price.");
+                    }
                 }
                 pricesToDelete.add(existingPrice);
-            } else {
+            }            
+             else {
                 ProductPricesDTO.PriceDTO matchingDTO = priceDTOs.stream()
                         .filter(dto -> existingPrice.getId().equals(dto.getId()))
                         .findFirst()

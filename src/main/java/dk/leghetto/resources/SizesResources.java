@@ -1,6 +1,7 @@
 package dk.leghetto.resources;
 import java.util.List;
 
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
@@ -22,7 +23,8 @@ public class SizesResources {
         List<Sizes> sizes = Sizes.listAll(); 
         return Response.ok(sizes).build();
     }
-
+    
+    @RolesAllowed("admin")
     @Path("/addSizes")
     @POST
     @Transactional

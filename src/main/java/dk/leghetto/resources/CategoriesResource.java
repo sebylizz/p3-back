@@ -4,6 +4,7 @@ import jakarta.ws.rs.core.Response;
 import java.util.List;
 
 import dk.leghetto.classes.Category;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
@@ -24,6 +25,7 @@ public class CategoriesResource {
         return Response.ok(category).build();
     }
 
+    @RolesAllowed("admin")
     @Path("/addCategory")
     @POST
     @Transactional

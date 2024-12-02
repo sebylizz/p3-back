@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.stripe.model.Price;
+import jakarta.annotation.security.RolesAllowed;
 
 import dk.leghetto.classes.Category;
 import dk.leghetto.classes.Collection;
@@ -25,6 +26,7 @@ import dk.leghetto.classes.ProductVariant;
 import dk.leghetto.classes.ProductVariantRepository;
 import dk.leghetto.classes.Product;
 import dk.leghetto.classes.Sizes;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
@@ -63,7 +65,15 @@ public class ProductResource {
     public Response getAllProducts() {
         return Response.ok(pr.getAllActiveProducts()).build();
     }
+    
+    @RolesAllowed("admin")
+    @Path("/getAllAdmin")
+    @GET
+    public Response getAllProductsActive() {
+        return Response.ok(pr.getAllProducts()).build();
+    }
 
+    @RolesAllowed("admin")
     @Path("/add")
     @POST
     @Transactional
@@ -145,6 +155,7 @@ public class ProductResource {
         }
     }
 
+    @RolesAllowed("admin")
     @GET
     @Path("/modifyProduct/{id}")
     public Response getProductWithPricesById(@PathParam("id") Long productId) {
@@ -162,6 +173,7 @@ public class ProductResource {
         }
     }
 
+    @RolesAllowed("admin")
     @PUT
     @Path("/updateProduct/{id}")
     @Transactional
