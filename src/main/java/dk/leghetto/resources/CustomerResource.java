@@ -21,6 +21,7 @@ import dk.leghetto.classes.Customer;
 import dk.leghetto.classes.CustomerRepository;
 import dk.leghetto.services.CustomerRequest;
 import dk.leghetto.services.MailService;
+import dk.leghetto.services.MatchPasswordRequest;
 import io.quarkus.elytron.security.common.BcryptUtil;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.panache.common.Page;
@@ -67,15 +68,12 @@ public class CustomerResource {
 
         PanacheQuery<Customer> query = customerRepository.findAll();
 
-        // Calculate the page index correctly
         int pageIndex = offset / limit;
 
         query.page(Page.of(pageIndex, limit));
 
-        // Fetch paginated customers
         List<Customer> customers = query.list();
 
-        // Return paginated results along with metadata
         return Response.ok(Map.of(
                 "customers", customers,
                 "total", query.count(), // Total number of customers
@@ -205,6 +203,12 @@ public class CustomerResource {
                     .build();
         }
 
+        if (!customerRepository.checkCustomerPassword(customerRequest.getPassword())) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("Password does not meet complexity requirements")
+                    .build();
+        }
+
         customerRepository.addAdmin(
                 customerRequest.getFirstName(),
                 customerRequest.getLastName(),
@@ -214,6 +218,7 @@ public class CustomerResource {
                 customerRequest.getPostalCode(),
                 customerRequest.getPassword(),
                 customerRequest.getRole());
+
         return Response.ok("Customer added successfully").build();
     }
 
@@ -286,42 +291,21 @@ public class CustomerResource {
     public Response updateCustomerById(@PathParam("id") Long id, Customer customer) {
         try {
             System.out.println("Received Customer Payload: " + customer);
-        System.out.println("Received Password: " + customer.getPasswordHash());
-        System.out.println("Received Address: " + customer.getaddress());
-            // Find existing customer
+            System.out.println("Received Password: " + customer.getPasswordHash());
+            System.out.println("Received Address: " + customer.getaddress());
+
             Customer existingCustomer = Customer.findById(id);
             if (existingCustomer == null) {
                 throw new NotFoundException("Customer not found with ID: " + id);
             }
-            
-            // Validate and set password only if provided
-            if (customer.getPasswordHash() != null && !customer.getPasswordHash().isBlank()) {
-                System.out.println("Received Password Hash: " + customer.getPasswordHash());
-                if (customerRepository.checkCustomerPassword(customer.getPasswordHash())) {
-                    existingCustomer.setPassword((customer.getPasswordHash()));
-                    System.out.println("Password updated successfully.");
 
-                }else{
-
-                    System.out.println("Password does not meet security requirements.");
-                    return Response.status(Response.Status.BAD_REQUEST)
-                            .entity("Password does not meet security requirements.")
-                            .build();
-
-                }
-
-
+            Customer otherCustomerWithEmail = Customer.find("email = ?1", customer.getEmail()).firstResult();
+            if (otherCustomerWithEmail != null && !otherCustomerWithEmail.getId().equals(id)) {
+                return Response.status(Response.Status.CONFLICT)
+                        .entity("Email already in use by another customer.")
+                        .build();
             }
-            // if (customerRepository.findByEmail(customer.getEmail()) != null) {
-            //     Customer existingEmailOwner = customerRepository.findByEmail(customer.getEmail());
-            //     if (!existingEmailOwner.getId().equals(customer.getId())) {
-            //         return Response.status(Response.Status.CONFLICT)
-            //                 .entity("Email already in use by another customer")
-            //                 .build();
-            //     }
-            // }
 
-            // Update other fields
             existingCustomer.setFirstName(customer.getFirstName());
             existingCustomer.setLastName(customer.getLastName());
             existingCustomer.setAddress(customer.getaddress());
@@ -331,8 +315,6 @@ public class CustomerResource {
             existingCustomer.setNewsletter(customer.getNewsletter());
             existingCustomer.setRole(customer.getRole());
 
-            // existingCustomer.persist();
-
             return Response.ok(existingCustomer).build();
         } catch (NotFoundException e) {
             return Response.status(Response.Status.NOT_FOUND)
@@ -341,6 +323,41 @@ public class CustomerResource {
         } catch (Exception e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                     .entity("Error updating customer: " + e.getMessage())
+                    .build();
+        }
+    }
+
+    @POST
+    @Path("/matchPassword")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @RolesAllowed("admin")
+    public Response matchPassword(@Context SecurityContext ctx, MatchPasswordRequest request) {
+        Customer email = customerRepository.findByEmail(ctx.getUserPrincipal().getName());
+        System.out.println("email");
+        System.out.println("email");
+        System.out.println("email");
+        System.out.println("email");
+        System.out.println(email);
+
+        if (email == null) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity("User not found")
+                    .build();
+        }
+
+        Long userId = email.getId();
+        System.out.println("User ID: " + userId);
+        try {
+            Boolean isMatch = customerRepository.matchPassword(request.getPassword(), userId);
+            return Response.ok(isMatch).build();
+        } catch (IllegalArgumentException e) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(e.getMessage())
+                    .build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("An error occurred: " + e.getMessage())
                     .build();
         }
     }
