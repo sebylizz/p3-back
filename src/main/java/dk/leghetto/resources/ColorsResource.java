@@ -1,4 +1,5 @@
 package dk.leghetto.resources;
+
 import jakarta.ws.rs.core.Response;
 
 import java.util.List;
@@ -17,11 +18,10 @@ import jakarta.ws.rs.core.MediaType;
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class ColorsResource {
-
     @Path("/getColors")
     @GET
     public Response getColors() {
-        List<Colors> colors = Colors.listAll(); 
+        List<Colors> colors = Colors.listAll();
         return Response.ok(colors).build();
     }
 
@@ -39,7 +39,4 @@ public class ColorsResource {
         color.persist();
         return Response.status(Response.Status.CREATED).entity(color).build();
     }
-
-
-
 }

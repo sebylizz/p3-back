@@ -3,7 +3,6 @@ package dk.leghetto.classes;
 import java.time.LocalDate;
 import java.util.List;
 
-
 public class ProductPricesDTO {
     private Long id;
     private String name;
