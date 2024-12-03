@@ -1,5 +1,6 @@
 package dk.leghetto.classes;
 
+import io.quarkus.elytron.security.common.BcryptUtil;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
@@ -73,6 +74,14 @@ public class CustomerRepository implements PanacheRepository<Customer> {
         return result.isValid();
     }
 
-    
-    
+    public Boolean matchPassword(String password, Long id){
+        if (password==null){
+            throw new IllegalArgumentException("Password cannot be null");
+        }
+        String foundPassword= findById(id).getPasswordHash();
+        if (BcryptUtil.matches(password, foundPassword)){return true; }
+        else{return false;}
+    }
+
+
 }

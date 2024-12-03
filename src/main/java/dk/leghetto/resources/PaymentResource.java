@@ -11,6 +11,7 @@ import com.stripe.model.PaymentIntent;
 import com.stripe.model.Price;
 import com.stripe.model.checkout.Session;
 
+import dk.leghetto.classes.Customer;
 import dk.leghetto.classes.CustomerRepository;
 import dk.leghetto.classes.OrderDetailsRepository;
 import dk.leghetto.classes.ProductVariant;
@@ -51,10 +52,9 @@ public class PaymentResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Path("/generatesessionid")
     public Response generateSessionId(OrderRequest orderRequest) {
-        System.out.println(orderRequest);
-        Long userId = cr.findByEmail(orderRequest.getDetails().getEmail()).getId();
-        if (userId != null) {
-            orderRequest.setUserId(userId);
+        Customer user = cr.findByEmail(orderRequest.getDetails().getEmail());
+        if (user != null) {
+            orderRequest.setUserId(user.getId());
         }
         try {
             String sessionId = paymentRequest.generateSessionId(orderRequest);
@@ -111,11 +111,11 @@ public class PaymentResource {
                     }
                     if (currentQuantity == 5) {
                         mailService.sendMail("ekkr", "Low stock",
-                                "Faggets der er low stock på denne vare: " + pv.getProduct().getName());
+                                "Dette produkt er i low stock: " + pv.getProduct().getName());
                     }
                     if (currentQuantity == 1) {
                         mailService.sendMail("ekkr", "Out of stock",
-                                "Faggets denne vare er out of stock: " + pv.getProduct().getName());
+                                "Dette produkt er udsolgt: " + pv.getProduct().getName());
                     }
                     pv.setQuantity(currentQuantity - 1);
                 } catch (Exception e) {
@@ -126,20 +126,19 @@ public class PaymentResource {
 
             paymentIntent = paymentIntent.update(Map.of("metadata", Map.of("processed", "true")));
 
-            String body = "Hallo bøsser i har fået en ny ordre til " +
+            String body = "Hej Lasse, I har fået en ny ordre til: " +
                     details.get("first_name") + ",\n\n"
                     + "Ordre detaljer:\n\n"
-                    + "First name: " + details.get("first_name") + "\n"
-                    + "Last name: " + details.get("last_name") + "\n"
+                    + "Fornavn: " + details.get("first_name") + "\n"
+                    + "Efternavn: " + details.get("last_name") + "\n"
                     + "Adresse: " + details.get("address") + "\n"
-                    + "Post nummer: " + details.get("postal_code") + "\n"
+                    + "Postnummer: " + details.get("postal_code") + "\n"
                     + "Telefonnummer: " + details.get("phone_number") + "\n"
                     + "Email: " + details.get("email") + "\n\n"
                     + "Ordre indhold:\n\n"
-                    // + lineItemCollection + "\n\n"
-                    + "Send den afsted faggets!";
+                    + lineItemCollection + "\n\n";
 
-            mailService.sendMail("ekkr", "New order", body);
+            mailService.sendMail("ekkr", "Ny ordre", body);
 
             return Response.ok(details).build();
         } catch (Exception e) {

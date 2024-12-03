@@ -69,6 +69,7 @@ public class ProductDTO {
         private String name;
         private String mainImage;
         private String images;
+        private Integer totalSales;
         private List<VariantDTO> variants;
 
         public ColorDTO() {
@@ -97,6 +98,13 @@ public class ProductDTO {
         }
         public void setImages(String images) {
             this.images = images;
+        }
+
+        public Integer getTotalSales(){
+            return totalSales;
+        }
+        public void setTotalSales(Integer totalSales){
+            this.totalSales=totalSales;
         }
         public List<VariantDTO> getVariants() {
             return variants;

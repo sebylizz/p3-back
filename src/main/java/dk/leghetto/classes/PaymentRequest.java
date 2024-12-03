@@ -35,23 +35,48 @@ public class PaymentRequest {
         metadata.put("user_id", orderRequest.getDetails().getUserId().toString());
 
         List<SessionCreateParams.LineItem> items = new ArrayList<>();
+
         for (ProductVariantDTO product : cart.getItems()) {
-            PriceCreateParams priceParams = PriceCreateParams
-                    .builder()
-                    .setProductData(
-                            PriceCreateParams.ProductData.builder().setName(product.getName()).build())
-                    .setCurrency("DKK")
-                    .setUnitAmount(product.getPrice())
-                    .putMetadata("id", product.getId().toString())
-                    .build();
-            Price price = Price.create(priceParams);
+            SessionCreateParams.LineItem existingItem;
+            existingItem = items.stream()
+                    .filter(item -> {
+                        try {
+                            return Price.retrieve(item.getPrice()).getMetadata().get("id").equals(product.getId().toString());
+                        } catch (StripeException e) {
+                            return false;
+                        }
+                    })
+                    .findFirst()
+                    .orElse(null);
 
-            SessionCreateParams.LineItem i = SessionCreateParams.LineItem.builder()
-                    .setPrice(price.getId())
-                    .setQuantity(1L)
-                    .build();
+                System.out.println(existingItem);
+            if (existingItem != null) {
+                long newQuantity = existingItem.getQuantity() + 1;
+                SessionCreateParams.LineItem updatedItem = SessionCreateParams.LineItem.builder()
+                        .setPrice(existingItem.getPrice())
+                        .setQuantity(newQuantity)
+                        .build();
 
-            items.add(i);
+                items.remove(existingItem);
+                items.add(updatedItem);
+            } else {
+                PriceCreateParams priceParams = PriceCreateParams
+                        .builder()
+                        .setProductData(
+                                PriceCreateParams.ProductData.builder().setName(product.getName()).build())
+                        .setCurrency("DKK")
+                        .setUnitAmount(product.getPrice())
+                        .putMetadata("id", product.getId().toString())
+                        .build();
+                Price price = Price.create(priceParams);
+
+                SessionCreateParams.LineItem newItem = SessionCreateParams.LineItem.builder()
+                        .setPrice(price.getId())
+                        .setQuantity(1L)
+                        .build();
+
+                items.add(newItem);
+            }
         }
 
         SessionCreateParams params = SessionCreateParams.builder()
@@ -63,8 +88,6 @@ public class PaymentRequest {
                 .build();
 
         Session session = Session.create(params);
-
-        System.out.println("Sesh is " + session);
 
         return session.getId();
     }
