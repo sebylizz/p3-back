@@ -93,12 +93,12 @@ public class PaymentResource {
                     Long.parseLong(details.get("user_id")));
 
             List<LineItem> lineItemCollection = session.listLineItems().getData();
-            System.out.println("lic: " + lineItemCollection);
 
             for (LineItem variant : lineItemCollection) {
                 Price price = Price.retrieve(variant.getPrice().getId());
                 Long amount = price.getUnitAmount();
                 Long variantId = Long.parseLong(price.getMetadata().get("id"));
+                Long quantity = variant.getQuantity();
                 orderItemsRepository.add(
                         id,
                         variantId,
@@ -117,7 +117,7 @@ public class PaymentResource {
                         mailService.sendMail("ekkr", "Out of stock",
                                 "Dette produkt er udsolgt: " + pv.getProduct().getName());
                     }
-                    pv.setQuantity(currentQuantity - 1);
+                    pv.setQuantity(currentQuantity - quantity);
                 } catch (Exception e) {
                     return Response.serverError().entity(e).build();
                 }

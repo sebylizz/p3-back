@@ -22,7 +22,10 @@ public class PaymentRequest {
     @Inject
     CartService cartService;
 
-    public String generateSessionId(OrderRequest orderRequest) throws StripeException {
+    @Inject
+    ProductVariantRepository pvr;
+
+    public String generateSessionId(OrderRequest orderRequest) throws Exception {
         Stripe.apiKey = "sk_test_51QA8WbCZh5mI9KbJi0PWYz6XKnbRn1slHQYMrlOpAVG13AJV1HT6kQ9ihNFPbr7uzpmLwIfU6TeXs5m4YOeYFr1U00fKvdltAl";
         Cart cart = cartService.cartFromStrings(orderRequest.getProductIds());
         Map<String, String> metadata = new HashMap<>();
@@ -41,7 +44,8 @@ public class PaymentRequest {
             existingItem = items.stream()
                     .filter(item -> {
                         try {
-                            return Price.retrieve(item.getPrice()).getMetadata().get("id").equals(product.getId().toString());
+                            return Price.retrieve(item.getPrice()).getMetadata().get("id")
+                                    .equals(product.getId().toString());
                         } catch (StripeException e) {
                             return false;
                         }
@@ -49,7 +53,6 @@ public class PaymentRequest {
                     .findFirst()
                     .orElse(null);
 
-                System.out.println(existingItem);
             if (existingItem != null) {
                 long newQuantity = existingItem.getQuantity() + 1;
                 SessionCreateParams.LineItem updatedItem = SessionCreateParams.LineItem.builder()
@@ -77,6 +80,15 @@ public class PaymentRequest {
 
                 items.add(newItem);
             }
+        }
+
+        for (SessionCreateParams.LineItem item : items) {
+            ProductVariant found = pvr
+                    .findById(Long.parseLong(Price.retrieve(item.getPrice()).getMetadata().get("id")));
+            if (item.getQuantity() > found.getQuantity()) {
+                throw new Exception("Not enough stock for " + found.getProduct().getName());
+            }
+
         }
 
         SessionCreateParams params = SessionCreateParams.builder()
