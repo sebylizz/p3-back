@@ -130,9 +130,6 @@ public class CustomerResource {
                 customerRequest.getFirstName(),
                 customerRequest.getLastName(),
                 customerRequest.getEmail(),
-                customerRequest.getTelephone(),
-                customerRequest.getAddress(),
-                customerRequest.getPostalCode(),
                 customerRequest.getPassword(),
                 verificationToken,
                 false); // for at sætte verified
@@ -217,9 +214,6 @@ public class CustomerResource {
                 customerRequest.getFirstName(),
                 customerRequest.getLastName(),
                 customerRequest.getEmail(),
-                customerRequest.getTelephone(),
-                customerRequest.getAddress(),
-                customerRequest.getPostalCode(),
                 customerRequest.getPassword(),
                 customerRequest.getRole());
 
