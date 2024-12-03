@@ -26,7 +26,6 @@ public class OrderItems extends PanacheEntityBase {
     private Long price;
 
     public OrderItems() {
-
     }
 
     public OrderItems(Long orderDetailsId, Long variantId, Long price) {

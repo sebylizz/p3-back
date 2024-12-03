@@ -4,28 +4,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
-import jakarta.annotation.security.RolesAllowed;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.DELETE;
-import jakarta.ws.rs.DefaultValue;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.NotFoundException;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.WebApplicationException;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.SecurityContext;
+
 import dk.leghetto.classes.Customer;
+import dk.leghetto.classes.CustomerDTO;
 import dk.leghetto.classes.CustomerRepository;
 import dk.leghetto.services.CustomerRequest;
 import dk.leghetto.services.MailService;
 import dk.leghetto.services.MatchPasswordRequest;
-import io.quarkus.elytron.security.common.BcryptUtil;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.panache.common.Page;
 import io.quarkus.panache.common.Parameters;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.Consumes;
@@ -39,8 +28,11 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.SecurityContext;
 
 @Path("/customers")
 public class CustomerResource {
@@ -50,7 +42,13 @@ public class CustomerResource {
     @Path("/getsinglecustomer")
     @RolesAllowed("user")
     public Response customer(@Context SecurityContext ctx) {
-        return Response.ok(customerRepository.findByEmail(ctx.getUserPrincipal().getName())).build();
+        Customer customer = customerRepository.findByEmail(ctx.getUserPrincipal().getName());
+        CustomerDTO dto = new CustomerDTO();
+        dto.setId(customer.getId());
+        dto.setFirstName(customer.getFirstName());
+        dto.setLastName(customer.getLastName());
+        dto.setEmail(customer.getEmail());
+        return Response.ok(dto).build();
     }
 
     @Inject
@@ -132,7 +130,7 @@ public class CustomerResource {
                 customerRequest.getEmail(),
                 customerRequest.getPassword(),
                 verificationToken,
-                false); // for at sætte verified
+                false);
 
         String body = "Hello " + customerRequest.getFirstName() + ",\n\n"
                 + "Welcome to Leghetto! We are delighted to have you join our community.\n\n"
@@ -152,7 +150,6 @@ public class CustomerResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response updateCustomer(Customer customer) {
         try {
-            // Use getters to access fields
             Customer updatedCustomer = Customer.updateCustomer(customer.getId(), customer.getFirstName(),
                     customer.getLastName(), customer.getEmail());
             return Response.ok(updatedCustomer).build(); // Return updated customer as response
@@ -217,7 +214,7 @@ public class CustomerResource {
                 customerRequest.getPassword(),
                 customerRequest.getRole());
 
-                return Response.status(Response.Status.CREATED)
+        return Response.status(Response.Status.CREATED)
                 .entity("Customer added successfully")
                 .build();
     }
@@ -354,5 +351,4 @@ public class CustomerResource {
                     .build();
         }
     }
-
 }

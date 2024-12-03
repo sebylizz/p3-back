@@ -88,7 +88,6 @@ public class PaymentRequest {
             if (item.getQuantity() > found.getQuantity()) {
                 throw new Exception("Not enough stock for " + found.getProduct().getName());
             }
-
         }
 
         SessionCreateParams params = SessionCreateParams.builder()

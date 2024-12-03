@@ -32,6 +32,4 @@ public class Collection extends PanacheEntityBase {
     public void setName(String name) {
         this.name = name;
     }
-    
-    
 }
