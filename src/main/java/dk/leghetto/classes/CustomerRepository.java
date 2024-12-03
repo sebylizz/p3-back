@@ -78,9 +78,7 @@ public class CustomerRepository implements PanacheRepository<Customer> {
         if (password==null){
             throw new IllegalArgumentException("Password cannot be null");
         }
-        System.out.println(password);
         String foundPassword= findById(id).getPasswordHash();
-        System.out.println(foundPassword);
         if (BcryptUtil.matches(password, foundPassword)){return true; }
         else{return false;}
     }

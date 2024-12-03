@@ -298,9 +298,6 @@ public class CustomerResource {
     @Transactional
     public Response updateCustomerById(@PathParam("id") Long id, Customer customer) {
         try {
-            System.out.println("Received Customer Payload: " + customer);
-            System.out.println("Received Password: " + customer.getPasswordHash());
-            System.out.println("Received Address: " + customer.getaddress());
 
             Customer existingCustomer = Customer.findById(id);
             if (existingCustomer == null) {
@@ -342,11 +339,6 @@ public class CustomerResource {
     @RolesAllowed("admin")
     public Response matchPassword(@Context SecurityContext ctx, MatchPasswordRequest request) {
         Customer email = customerRepository.findByEmail(ctx.getUserPrincipal().getName());
-        System.out.println("email");
-        System.out.println("email");
-        System.out.println("email");
-        System.out.println("email");
-        System.out.println(email);
 
         if (email == null) {
             return Response.status(Response.Status.NOT_FOUND)
@@ -355,7 +347,6 @@ public class CustomerResource {
         }
 
         Long userId = email.getId();
-        System.out.println("User ID: " + userId);
         try {
             Boolean isMatch = customerRepository.matchPassword(request.getPassword(), userId);
             return Response.ok(isMatch).build();

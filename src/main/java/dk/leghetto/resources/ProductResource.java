@@ -143,8 +143,6 @@ public class ProductResource {
                 productVariant.setQuantity(variantDTO.getQuantity());
                 productVariant.persist();
             }
-
-            System.out.println(product.getId());
             return Response.status(Response.Status.CREATED)
                     .entity(Map.of("productId", product.getId()))
                     .build();
