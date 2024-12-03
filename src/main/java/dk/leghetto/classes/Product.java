@@ -3,6 +3,7 @@ package dk.leghetto.classes;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.stripe.model.Price;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import jakarta.persistence.CascadeType;
@@ -59,33 +60,95 @@ public class Product extends PanacheEntityBase {
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ProductVariant> variants;
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    @JsonManagedReference
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProductPrice> prices; // Historical prices
 
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    public Long getId() {
+        return id;
+    }
 
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public Boolean getIsActive() { return isActive; }
-    public void setIsActive(Boolean isActive) { this.isActive = isActive; }
+    public String getName() {
+        return name;
+    }
 
-    public Category getCategory() { return category; }
-    public void setCategory(Category category) { this.category = category; }
+    public void setName(String name) {
+        this.name = name;
+    }
 
-    public Collection getCollection() { return collection; }
-    public void setCollection(Collection collection) { this.collection = collection; }
+    public String getDescription() {
+        return description;
+    }
 
-    public ProductPrice getPrice() { return price; }
-    public void setPrice(ProductPrice price) { this.price = price; }
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
-    public Boolean getIsDiscount() { return isDiscount; }
-    public void setIsDiscount(Boolean isDiscount) { this.isDiscount = isDiscount; }
+    public Boolean getIsActive() {
+        return isActive;
+    }
 
-    public List<ProductColor> getColors() { return colors; }
-    public void setColors(List<ProductColor> colors) { this.colors = colors; }
+    public void setIsActive(Boolean isActive) {
+        this.isActive = isActive;
+    }
 
-    public List<ProductVariant> getVariants() { return variants; }
-    public void setVariants(List<ProductVariant> variants) { this.variants = variants; }
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
+    }
+
+    public Collection getCollection() {
+        return collection;
+    }
+
+    public void setCollection(Collection collection) {
+        this.collection = collection;
+    }
+
+    public ProductPrice getPrice() {
+        return price;
+    }
+
+    public void setPrice(ProductPrice price) {
+        this.price = price;
+    }
+
+    public Boolean getIsDiscount() {
+        return isDiscount;
+    }
+
+    public void setIsDiscount(Boolean isDiscount) {
+        this.isDiscount = isDiscount;
+    }
+
+    public List<ProductColor> getColors() {
+        return colors;
+    }
+
+    public void setColors(List<ProductColor> colors) {
+        this.colors = colors;
+    }
+
+    public List<ProductVariant> getVariants() {
+        return variants;
+    }
+
+    public void setVariants(List<ProductVariant> variants) {
+        this.variants = variants;
+    }
+
+    public List<ProductPrice> getPrices() {
+        return prices;
+    }
+
+    public void setPrices(List<ProductPrice> prices) {
+        this.prices = prices;
+    }
 }

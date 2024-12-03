@@ -4,6 +4,7 @@ import jakarta.ws.rs.core.Response;
 import java.util.List;
 
 import dk.leghetto.classes.Colors;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
@@ -24,6 +25,7 @@ public class ColorsResource {
         return Response.ok(colors).build();
     }
 
+    @RolesAllowed("admin")
     @Path("/addColor")
     @POST
     @Transactional
