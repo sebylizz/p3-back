@@ -182,6 +182,6 @@ public class LoginResource {
                 name = customer.getFirstName();
             }
         }
-        return String.format("Hi %s", name);
+        return name;
     }
 }
