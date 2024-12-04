@@ -72,23 +72,23 @@ public class Customer extends PanacheEntityBase {
     public Customer() {
     }
 
-    public Customer(String firstName, String lastName, String email, String password, String verificationToken, Boolean verified, String role) {
+    public Customer(String firstName, String lastName, String email, String password, String verificationToken,
+            Boolean verified, String role) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
         this.newsletter = false;
         this.password = BcryptUtil.bcryptHash(password);
-        if (role!=null && role!="user"){
+        if (role != null && role != "user") {
             this.role = role;
 
-        }else{
-            this.role="user";
+        } else {
+            this.role = "user";
         }
 
         this.verificationToken = verificationToken;
         this.verified = verified;
     }
-
 
     public boolean matchPsw(String password) {
         return BcryptUtil.matches(password, this.password);
@@ -126,31 +126,33 @@ public class Customer extends PanacheEntityBase {
         return role;
     }
 
-    public String getaddress(){
+    public String getaddress() {
         return address;
     }
 
-    public Integer getPostalCode(){
+    public Integer getPostalCode() {
         return postalCode;
     }
 
-
-    public void setRole(String role){
-        this.role=role;
-    }
-    public void setTelephone(Integer telephone){
-        this.telephone=telephone;
+    public void setRole(String role) {
+        this.role = role;
     }
 
-    public void setNewsletter(Boolean newsletter){
-        this.newsletter=newsletter;
+    public void setTelephone(Integer telephone) {
+        this.telephone = telephone;
     }
-    public void setPostalCode(Integer postalcode){
-        this.postalCode=postalcode;
+
+    public void setNewsletter(Boolean newsletter) {
+        this.newsletter = newsletter;
+    }
+
+    public void setPostalCode(Integer postalcode) {
+        this.postalCode = postalcode;
 
     }
-    public void setAddress(String address){
-        this.address=address;
+
+    public void setAddress(String address) {
+        this.address = address;
     }
 
     public void setFirstName(String firstName) {
@@ -169,7 +171,7 @@ public class Customer extends PanacheEntityBase {
         this.password = BcryptUtil.bcryptHash(password);
     }
 
-    public void setVerified(Boolean verified) { //for at ændre verification status efter verification link er trykket
+    public void setVerified(Boolean verified) { // for at ændre verification status efter verification link er trykket
         this.verified = verified;
     }
 
@@ -180,7 +182,7 @@ public class Customer extends PanacheEntityBase {
     public void setResetPasswordTokenExpiration(LocalDateTime resetPasswordTokenExpiration) {
         this.resetPasswordTokenExpiration = resetPasswordTokenExpiration;
     }
-    
+
     @Transactional
     public static Customer updateCustomer(Long id, String firstName, String lastName, String email) {
         Customer customer = findById(id);
@@ -195,12 +197,18 @@ public class Customer extends PanacheEntityBase {
         customer.persist(); // Automatically updates or persists the entity
         return customer;
     }
-      
-    public String verificationToken() { return verificationToken; }
 
-    public Boolean verified() { return verified; }
+    public String verificationToken() {
+        return verificationToken;
+    }
 
-    public LocalDateTime getResetPasswordTokenExpiration() { return resetPasswordTokenExpiration; }
+    public Boolean verified() {
+        return verified;
+    }
+
+    public LocalDateTime getResetPasswordTokenExpiration() {
+        return resetPasswordTokenExpiration;
+    }
 
     @Override
     public String toString() {

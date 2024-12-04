@@ -1,5 +1,7 @@
 package dk.leghetto.resources;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import jakarta.annotation.security.RolesAllowed;
 
@@ -61,106 +63,102 @@ public class ProductResource {
         return Response.ok(pr.getAllProducts()).build();
     }
 
-    
     @RolesAllowed("admin")
-@Path("/add")
-@POST
-@Transactional
-public Response addProduct(ProductGetPostDTO request) {
-    try {
-        Category category = Category.findById(request.getCategoryId());
-        if (category == null) {
-            return Response.status(Response.Status.BAD_REQUEST)
-                    .entity("Invalid category ID: " + request.getCategoryId()).build();
-        }
-
-        Collection collection = Collection.findById(request.getCollectionId());
-        if (collection == null) {
-            return Response.status(Response.Status.BAD_REQUEST)
-                    .entity("Invalid collection ID: " + request.getCollectionId()).build();
-        }
-
-        Product product = new Product();
-        product.setName(request.getName());
-        product.setDescription(request.getDescription());
-        product.setIsActive(request.getIsActive());
-        product.setCategory(category);
-        product.setCollection(collection);
-        product.persist();
-
-
-        List<Long> newColorIds = new ArrayList<>();
-
-        for (ProductGetPostDTO.ColorDTO colorDTO : request.getColors()) {
-            Colors color = Colors.findById(colorDTO.getColor());
-            if (color == null) {
+    @Path("/add")
+    @POST
+    @Transactional
+    public Response addProduct(ProductGetPostDTO request) {
+        try {
+            Category category = Category.findById(request.getCategoryId());
+            if (category == null) {
                 return Response.status(Response.Status.BAD_REQUEST)
-                        .entity("Invalid color ID: " + colorDTO.getColor()).build();
+                        .entity("Invalid category ID: " + request.getCategoryId()).build();
             }
 
-            ProductColor productColor = new ProductColor();
-            productColor.setProduct(product);
-            productColor.setColor(color);
-            productColor.setMainImage(colorDTO.getMainImage());
-            productColor.setImages(colorDTO.getImages());
-            productColor.persist();
-
-            newColorIds.add(productColor.getId());
-        }
-
-        if (request.getPrices() == null || request.getPrices().isEmpty()) {
-            return Response.status(Response.Status.BAD_REQUEST)
-                    .entity("At least one price must be provided.").build();
-        }
-
-        ProductGetPostDTO.PriceDTO priceDTO = request.getPrices().get(0);
-        ProductPrice productPrice = new ProductPrice();
-        productPrice.setProduct(product);
-        productPrice.setPrice(priceDTO.getPrice());
-        productPrice.setIsDiscount(priceDTO.isDiscount());
-        productPrice.setStartDate(priceDTO.getStartDate());
-        productPrice.setEndDate(priceDTO.getEndDate());
-        productPrice.persist();
-
-        for (ProductGetPostDTO.ColorDTO colorDTO : request.getColors()) {
-            ProductColor productColor = ProductColor.find("product = ?1 and color.id = ?2",
-                    product, colorDTO.getColor()).firstResult();
-
-            if (productColor == null) {
+            Collection collection = Collection.findById(request.getCollectionId());
+            if (collection == null) {
                 return Response.status(Response.Status.BAD_REQUEST)
-                        .entity("Invalid color ID for variant: " + colorDTO.getColor()).build();
+                        .entity("Invalid collection ID: " + request.getCollectionId()).build();
             }
 
-            for (ProductGetPostDTO.ColorDTO.VariantDTO variantDTO : colorDTO.getVariants()) {
-                ProductSize size = ProductSize.findById(variantDTO.getSizeId());
-                if (size == null) {
+            Product product = new Product();
+            product.setName(request.getName());
+            product.setDescription(request.getDescription());
+            product.setIsActive(request.getIsActive());
+            product.setCategory(category);
+            product.setCollection(collection);
+            product.persist();
+
+            List<Long> newColorIds = new ArrayList<>();
+
+            for (ProductGetPostDTO.ColorDTO colorDTO : request.getColors()) {
+                Colors color = Colors.findById(colorDTO.getColor());
+                if (color == null) {
                     return Response.status(Response.Status.BAD_REQUEST)
-                            .entity("Invalid size ID for variant: " + variantDTO.getSizeId()).build();
+                            .entity("Invalid color ID: " + colorDTO.getColor()).build();
                 }
 
-                ProductVariant productVariant = new ProductVariant();
-                productVariant.setProduct(product);
-                productVariant.setColor(productColor);
-                productVariant.setSize(size);
-                productVariant.setQuantity(variantDTO.getQuantity());
-                productVariant.persist();
-            }
-        }
-        System.out.println("Product ID: " + product.getId());
-        System.out.println("Color IDs: " + newColorIds);
-        return Response.status(Response.Status.CREATED)
-                .entity(Map.of(
-                        "productId", product.getId(),
-                        "colorIds", newColorIds
-                ))
-                .build();
-    } catch (Exception e) {
-        e.printStackTrace();
-        return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                .entity("Error adding product: " + e.getMessage()).build();
-    }
-}
+                ProductColor productColor = new ProductColor();
+                productColor.setProduct(product);
+                productColor.setColor(color);
+                productColor.setMainImage(colorDTO.getMainImage());
+                productColor.setImages(colorDTO.getImages());
+                productColor.persist();
 
+                newColorIds.add(productColor.getId());
+            }
+
+            if (request.getPrices() == null || request.getPrices().isEmpty()) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("At least one price must be provided.").build();
+            }
+
+            ProductGetPostDTO.PriceDTO priceDTO = request.getPrices().get(0);
+            ProductPrice productPrice = new ProductPrice();
+            productPrice.setProduct(product);
+            productPrice.setPrice(priceDTO.getPrice());
+            productPrice.setIsDiscount(priceDTO.isDiscount());
+            productPrice.setStartDate(priceDTO.getStartDate());
+            productPrice.setEndDate(priceDTO.getEndDate());
+            productPrice.persist();
+
+            for (ProductGetPostDTO.ColorDTO colorDTO : request.getColors()) {
+                ProductColor productColor = ProductColor.find("product = ?1 and color.id = ?2",
+                        product, colorDTO.getColor()).firstResult();
+
+                if (productColor == null) {
+                    return Response.status(Response.Status.BAD_REQUEST)
+                            .entity("Invalid color ID for variant: " + colorDTO.getColor()).build();
+                }
+
+                for (ProductGetPostDTO.ColorDTO.VariantDTO variantDTO : colorDTO.getVariants()) {
+                    ProductSize size = ProductSize.findById(variantDTO.getSizeId());
+                    if (size == null) {
+                        return Response.status(Response.Status.BAD_REQUEST)
+                                .entity("Invalid size ID for variant: " + variantDTO.getSizeId()).build();
+                    }
+
+                    ProductVariant productVariant = new ProductVariant();
+                    productVariant.setProduct(product);
+                    productVariant.setColor(productColor);
+                    productVariant.setSize(size);
+                    productVariant.setQuantity(variantDTO.getQuantity());
+                    productVariant.persist();
+                }
+            }
+            System.out.println("Product ID: " + product.getId());
+            System.out.println("Color IDs: " + newColorIds);
+            return Response.status(Response.Status.CREATED)
+                    .entity(Map.of(
+                            "productId", product.getId(),
+                            "colorIds", newColorIds))
+                    .build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Error adding product: " + e.getMessage()).build();
+        }
+    }
 
     @RolesAllowed("admin")
     @GET

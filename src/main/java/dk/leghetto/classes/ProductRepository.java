@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -59,34 +60,32 @@ public class ProductRepository implements PanacheRepository<Product> {
     }
 
     public List<ProductAdminDTO> getAllProducts() {
-        List<Product> products = Product.listAll(); 
+        List<Product> products = Product.listAll();
         return products.stream()
                 .map(product -> {
                     ProductAdminDTO productAdminDTO = new ProductAdminDTO();
                     productAdminDTO.setId(product.getId());
                     productAdminDTO.setName(product.getName());
-    
 
                     if (product.getPrice() != null) {
                         productAdminDTO.setPrice(product.getPrice().getPrice());
                     }
-    
 
                     productAdminDTO.setColors(product.getColors().stream()
                             .map(color -> {
                                 ProductAdminDTO.ColorDTO colorDTO = new ProductAdminDTO.ColorDTO();
                                 colorDTO.setId(color.getId());
                                 colorDTO.setColorId(color.getColor());
-                                colorDTO.setMainImage(color.getMainImage()); 
+                                colorDTO.setMainImage(color.getMainImage());
                                 return colorDTO;
                             })
-                            .limit(1) 
+                            .limit(1)
                             .collect(Collectors.toList()));
-    
+
                     return productAdminDTO;
                 })
                 .collect(Collectors.toList());
-    }    
+    }
 
     public ProductGetPostDTO getProductWithPricesById(Long productId) {
 
@@ -247,7 +246,8 @@ public class ProductRepository implements PanacheRepository<Product> {
         }
     }
 
-    public List<Map<String, Long>> updateColorsAndVariants(Product product, List<ProductGetPostDTO.ColorDTO> colorDTOs) {
+    public List<Map<String, Long>> updateColorsAndVariants(Product product,
+            List<ProductGetPostDTO.ColorDTO> colorDTOs) {
         List<ProductColor> existingColors = product.getColors();
         List<ProductColor> colorsToDelete = new ArrayList<>();
         List<ProductColor> colorsToAdd = new ArrayList<>();
@@ -278,11 +278,11 @@ public class ProductRepository implements PanacheRepository<Product> {
         for (ProductColor colorToAdd : colorsToAdd) {
             colorToAdd.persist();
             Map<String, Long> colorMap = new HashMap<>();
-            colorMap.put("colorId", colorToAdd.getColor().getId()); 
-            colorMap.put("id", colorToAdd.getId()); 
+            colorMap.put("colorId", colorToAdd.getColor().getId());
+            colorMap.put("id", colorToAdd.getId());
             newColorMapping.add(colorMap);
         }
-        return newColorMapping; 
+        return newColorMapping;
     }
 
     private void updateExistingColor(ProductColor color, List<ProductGetPostDTO.ColorDTO> colorDTOs) {
@@ -330,7 +330,8 @@ public class ProductRepository implements PanacheRepository<Product> {
         }
     }
 
-    private void updateExistingVariant(ProductVariant variant, List<ProductGetPostDTO.ColorDTO.VariantDTO> variantDTOs) {
+    private void updateExistingVariant(ProductVariant variant,
+            List<ProductGetPostDTO.ColorDTO.VariantDTO> variantDTOs) {
         ProductGetPostDTO.ColorDTO.VariantDTO matchingDTO = variantDTOs.stream()
                 .filter(dto -> dto.getId().equals(variant.getId()))
                 .findFirst()
@@ -355,19 +356,19 @@ public class ProductRepository implements PanacheRepository<Product> {
         }
         newColor.setColor(colorEntity);
         newColor.persist();
-        
-    if (colorDTO.getVariants() != null) {
-        for (ProductGetPostDTO.ColorDTO.VariantDTO variantDTO : colorDTO.getVariants()) {
-            ProductVariant newVariant = new ProductVariant();
-            newVariant.setSize(ProductSize.findById(variantDTO.getSizeId()));
-            newVariant.setQuantity(variantDTO.getQuantity());
-            newVariant.setColor(newColor);
-            newVariant.setProduct(product);
-            newVariant.persist();
-        }
-    }
 
-    colorsToAdd.add(newColor); 
+        if (colorDTO.getVariants() != null) {
+            for (ProductGetPostDTO.ColorDTO.VariantDTO variantDTO : colorDTO.getVariants()) {
+                ProductVariant newVariant = new ProductVariant();
+                newVariant.setSize(ProductSize.findById(variantDTO.getSizeId()));
+                newVariant.setQuantity(variantDTO.getQuantity());
+                newVariant.setColor(newColor);
+                newVariant.setProduct(product);
+                newVariant.persist();
+            }
+        }
+
+        colorsToAdd.add(newColor);
     }
 
     private void addNewVariant(ProductColor color, ProductGetPostDTO.ColorDTO.VariantDTO variantDTO,

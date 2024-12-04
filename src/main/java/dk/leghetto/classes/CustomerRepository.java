@@ -12,7 +12,8 @@ import org.passay.*;
 
 @ApplicationScoped
 public class CustomerRepository implements PanacheRepository<Customer> {
-    public void add(String first_name, String last_name, String email, String password, String verificationToken, Boolean verified) {
+    public void add(String first_name, String last_name, String email, String password, String verificationToken,
+            Boolean verified) {
         Customer p = new Customer(first_name, last_name, email, password, verificationToken, verified, null);
         persist(p);
     }
@@ -62,26 +63,27 @@ public class CustomerRepository implements PanacheRepository<Customer> {
         }
 
         PasswordValidator validator = new PasswordValidator(
-                new LengthRule(8, 16),           
-                new CharacterRule(EnglishCharacterData.UpperCase, 1), 
-                new CharacterRule(EnglishCharacterData.LowerCase, 1), 
-                new CharacterRule(EnglishCharacterData.Digit, 1),     
-                new CharacterRule(EnglishCharacterData.Special, 1),   
-                new WhitespaceRule()            
-        );
+                new LengthRule(8, 16),
+                new CharacterRule(EnglishCharacterData.UpperCase, 1),
+                new CharacterRule(EnglishCharacterData.LowerCase, 1),
+                new CharacterRule(EnglishCharacterData.Digit, 1),
+                new CharacterRule(EnglishCharacterData.Special, 1),
+                new WhitespaceRule());
 
         RuleResult result = validator.validate(new PasswordData(password));
         return result.isValid();
     }
 
-    public Boolean matchPassword(String password, Long id){
-        if (password==null){
+    public Boolean matchPassword(String password, Long id) {
+        if (password == null) {
             throw new IllegalArgumentException("Password cannot be null");
         }
-        String foundPassword= findById(id).getPasswordHash();
-        if (BcryptUtil.matches(password, foundPassword)){return true; }
-        else{return false;}
+        String foundPassword = findById(id).getPasswordHash();
+        if (BcryptUtil.matches(password, foundPassword)) {
+            return true;
+        } else {
+            return false;
+        }
     }
-
 
 }
