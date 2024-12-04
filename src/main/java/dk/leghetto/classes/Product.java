@@ -62,7 +62,7 @@ public class Product extends PanacheEntityBase {
 
     @JsonManagedReference
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ProductPrice> prices; // Historical prices
+    private List<ProductPrice> prices; 
 
     public Long getId() {
         return id;

@@ -19,6 +19,7 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.SecurityContext;
 import dk.leghetto.classes.Customer;
 import dk.leghetto.classes.CustomerRepository;
+import dk.leghetto.classes.OrderDetails;
 import dk.leghetto.services.CustomerRequest;
 import dk.leghetto.services.MailService;
 import dk.leghetto.services.MatchPasswordRequest;
@@ -86,13 +87,23 @@ public class CustomerResource {
     @DELETE
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/deleteCustomer/{id}")
+    @Transactional
     public Response deleteCustomer(@PathParam("id") Long id) {
         try {
-            customerRepository.delete(id);
+            int updatedRows = OrderDetails.update("userId = 0 where userId = ?1", id);
+            System.out.println("Updated orders: " + updatedRows);
+
+            boolean deleted = customerRepository.deleteById(id);
+            if (!deleted) {
+                return Response.status(Response.Status.NOT_FOUND)
+                        .entity("Customer not found with ID: " + id)
+                        .build();
+            }
+
             return Response.noContent().build();
-        } catch (NotFoundException e) {
-            return Response.status(Response.Status.NOT_FOUND)
-                    .entity("Customer not found with ID: " + id)
+        } catch (Exception e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Error deleting customer: " + e.getMessage())
                     .build();
         }
     }
@@ -223,7 +234,7 @@ public class CustomerResource {
                 customerRequest.getPassword(),
                 customerRequest.getRole());
 
-                return Response.status(Response.Status.CREATED)
+        return Response.status(Response.Status.CREATED)
                 .entity("Customer added successfully")
                 .build();
     }

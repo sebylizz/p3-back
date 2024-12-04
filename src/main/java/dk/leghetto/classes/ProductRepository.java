@@ -3,6 +3,7 @@ package dk.leghetto.classes;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -14,7 +15,7 @@ import com.stripe.model.Price;
 
 import dk.leghetto.classes.ProductDTO.ColorDTO;
 import dk.leghetto.classes.ProductDTO.ColorDTO.VariantDTO;
-import dk.leghetto.classes.ProductPricesDTO.PriceDTO;
+import dk.leghetto.classes.ProductGetPostDTO.PriceDTO;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -62,60 +63,37 @@ public class ProductRepository implements PanacheRepository<Product> {
                 }).collect(Collectors.toList());
     }
 
-    public List<ProductDTO> getAllProducts() {
-        List<Product> products = Product.listAll();
+    public List<ProductAdminDTO> getAllProducts() {
+        List<Product> products = Product.listAll(); 
         return products.stream()
                 .map(product -> {
-                    ProductDTO productDTO = new ProductDTO();
-                    productDTO.setId(product.getId());
-                    productDTO.setName(product.getName());
-                    productDTO.setDescription(product.getDescription());
-
-                    if (product.getCategory() != null) {
-                        productDTO.setCategoryId(product.getCategory().getId());
-                    }
-                    if (product.getCollection() != null) {
-                        productDTO.setCollectionId(product.getCollection().getId());
-                    }
+                    ProductAdminDTO productAdminDTO = new ProductAdminDTO();
+                    productAdminDTO.setId(product.getId());
+                    productAdminDTO.setName(product.getName());
+    
 
                     if (product.getPrice() != null) {
-                        productDTO.setPrice(product.getPrice().getPrice());
+                        productAdminDTO.setPrice(product.getPrice().getPrice());
                     }
+    
 
-                    productDTO.setColors(product.getColors().stream()
+                    productAdminDTO.setColors(product.getColors().stream()
                             .map(color -> {
-                                ColorDTO colorDTO = new ColorDTO();
+                                ProductAdminDTO.ColorDTO colorDTO = new ProductAdminDTO.ColorDTO();
                                 colorDTO.setId(color.getId());
-                                if (color.getColor() != null) {
-                                    colorDTO.setName(color.getColor().getName());
-                                }
-                                colorDTO.setMainImage(color.getMainImage());
-                                colorDTO.setImages(color.getImages());
-                                colorDTO.setTotalSales(color.getTotalSales());
-
-                                colorDTO.setVariants(color.getVariants().stream()
-                                        .map(colorVariant -> {
-                                            ColorDTO.VariantDTO variantDTO = new ColorDTO.VariantDTO();
-                                            variantDTO.setId(colorVariant.getId());
-                                            if (colorVariant.getSize() != null) {
-                                                variantDTO.setSize(colorVariant.getSize().getName());
-                                            }
-                                            variantDTO.setQuantity(colorVariant.getQuantity());
-                                            return variantDTO;
-                                        }).collect(Collectors.toList()));
-
+                                colorDTO.setColorId(color.getColor());
+                                colorDTO.setMainImage(color.getMainImage()); 
                                 return colorDTO;
-                            }).collect(Collectors.toList()));
+                            })
+                            .limit(1) 
+                            .collect(Collectors.toList()));
+    
+                    return productAdminDTO;
+                })
+                .collect(Collectors.toList());
+    }    
 
-                    if (!product.getVariants().isEmpty() && product.getVariants().get(0).getColor() != null) {
-                        productDTO.setMainImage(product.getVariants().get(0).getColor().getMainImage());
-                    }
-
-                    return productDTO;
-                }).collect(Collectors.toList());
-    }
-
-    public ProductPricesDTO getProductWithPricesById(Long productId) {
+    public ProductGetPostDTO getProductWithPricesById(Long productId) {
 
         Product product = find("id", productId).firstResult();
 
@@ -123,7 +101,7 @@ public class ProductRepository implements PanacheRepository<Product> {
             throw new NotFoundException("Product with id " + productId + " not found");
         }
 
-        ProductPricesDTO productDTO = new ProductPricesDTO();
+        ProductGetPostDTO productDTO = new ProductGetPostDTO();
         productDTO.setId(product.getId());
         productDTO.setName(product.getName());
         productDTO.setDescription(product.getDescription());
@@ -142,7 +120,7 @@ public class ProductRepository implements PanacheRepository<Product> {
 
         productDTO.setColors(product.getColors().stream()
                 .map(color -> {
-                    ProductPricesDTO.ColorDTO colorDTO = new ProductPricesDTO.ColorDTO();
+                    ProductGetPostDTO.ColorDTO colorDTO = new ProductGetPostDTO.ColorDTO();
                     colorDTO.setId(color.getId());
                     colorDTO.setProduct(product.getId());
                     colorDTO.setColor(color.getColor().getId());
@@ -152,7 +130,7 @@ public class ProductRepository implements PanacheRepository<Product> {
 
                     colorDTO.setVariants(color.getVariants().stream()
                             .map(variant -> {
-                                ProductPricesDTO.ColorDTO.VariantDTO variantDTO = new ProductPricesDTO.ColorDTO.VariantDTO();
+                                ProductGetPostDTO.ColorDTO.VariantDTO variantDTO = new ProductGetPostDTO.ColorDTO.VariantDTO();
                                 variantDTO.setId(variant.getId());
                                 variantDTO.setColorId(color.getColor());
                                 variantDTO.setSizeId(variant.getSize() != null ? variant.getSize().getId() : null);
@@ -165,7 +143,7 @@ public class ProductRepository implements PanacheRepository<Product> {
 
         productDTO.setPrices(product.getPrices().stream()
                 .map(price -> {
-                    ProductPricesDTO.PriceDTO priceDTO = new ProductPricesDTO.PriceDTO();
+                    ProductGetPostDTO.PriceDTO priceDTO = new ProductGetPostDTO.PriceDTO();
                     priceDTO.setId(price.getId());
                     priceDTO.setPrice(price.getPrice());
                     priceDTO.setDiscount(price.getIsDiscount());
@@ -177,7 +155,7 @@ public class ProductRepository implements PanacheRepository<Product> {
         return productDTO;
     }
 
-    public void updateBasicDetails(Product product, ProductPricesDTO productDTO) {
+    public void updateBasicDetails(Product product, ProductGetPostDTO productDTO) {
         product.setName(productDTO.getName());
         product.setDescription(productDTO.getDescription());
         product.setIsActive(productDTO.getIsActive());
@@ -185,13 +163,13 @@ public class ProductRepository implements PanacheRepository<Product> {
         product.setCollection(Collection.findById(productDTO.getCollectionId()));
     }
 
-    public void validateAndUpdatePrices(Product product, List<ProductPricesDTO.PriceDTO> priceDTOs) {
+    public void validateAndUpdatePrices(Product product, List<ProductGetPostDTO.PriceDTO> priceDTOs) {
         List<ProductPrice> existingPrices = product.getPrices();
         List<ProductPrice> pricesToDelete = new ArrayList<>();
-        List<ProductPricesDTO.PriceDTO> pricesToAdd = new ArrayList<>();
+        List<ProductGetPostDTO.PriceDTO> pricesToAdd = new ArrayList<>();
 
         Set<Long> dtoPriceIds = priceDTOs.stream()
-                .map(ProductPricesDTO.PriceDTO::getId)
+                .map(ProductGetPostDTO.PriceDTO::getId)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
 
@@ -210,7 +188,7 @@ public class ProductRepository implements PanacheRepository<Product> {
                 }
                 pricesToDelete.add(existingPrice);
             } else {
-                ProductPricesDTO.PriceDTO matchingDTO = priceDTOs.stream()
+                ProductGetPostDTO.PriceDTO matchingDTO = priceDTOs.stream()
                         .filter(dto -> existingPrice.getId().equals(dto.getId()))
                         .findFirst()
                         .orElse(null);
@@ -225,13 +203,13 @@ public class ProductRepository implements PanacheRepository<Product> {
             }
         }
 
-        for (ProductPricesDTO.PriceDTO priceDTO : priceDTOs) {
+        for (ProductGetPostDTO.PriceDTO priceDTO : priceDTOs) {
             if (priceDTO.getId() == null) {
                 pricesToAdd.add(priceDTO);
             }
         }
 
-        for (ProductPricesDTO.PriceDTO priceDTO : pricesToAdd) {
+        for (ProductGetPostDTO.PriceDTO priceDTO : pricesToAdd) {
             validatePriceDates(priceDTO.getStartDate(), priceDTO.getEndDate());
             if (!priceDTO.isDiscount()) {
                 handleNonDiscountPrice(existingPrices, priceDTO);
@@ -248,7 +226,7 @@ public class ProductRepository implements PanacheRepository<Product> {
         }
     }
 
-    private void handleNonDiscountPrice(List<ProductPrice> existingPrices, ProductPricesDTO.PriceDTO newPrice) {
+    private void handleNonDiscountPrice(List<ProductPrice> existingPrices, ProductGetPostDTO.PriceDTO newPrice) {
         for (ProductPrice price : existingPrices) {
             if (!price.getIsDiscount() && price.getEndDate() == null) {
                 price.setEndDate(newPrice.getStartDate().minusDays(1));
@@ -256,7 +234,7 @@ public class ProductRepository implements PanacheRepository<Product> {
         }
     }
 
-    private void addNewPrice(Product product, ProductPricesDTO.PriceDTO priceDTO) {
+    private void addNewPrice(Product product, ProductGetPostDTO.PriceDTO priceDTO) {
         ProductPrice newPrice = new ProductPrice();
         newPrice.setPrice(priceDTO.getPrice());
         newPrice.setIsDiscount(priceDTO.isDiscount());
@@ -274,13 +252,14 @@ public class ProductRepository implements PanacheRepository<Product> {
         }
     }
 
-    public void updateColorsAndVariants(Product product, List<ProductPricesDTO.ColorDTO> colorDTOs) {
+    public List<Map<String, Long>> updateColorsAndVariants(Product product, List<ProductGetPostDTO.ColorDTO> colorDTOs) {
         List<ProductColor> existingColors = product.getColors();
         List<ProductColor> colorsToDelete = new ArrayList<>();
         List<ProductColor> colorsToAdd = new ArrayList<>();
+        List<Map<String, Long>> newColorMapping = new ArrayList<>();
 
         Set<Long> dtoColorIds = colorDTOs.stream()
-                .map(ProductPricesDTO.ColorDTO::getId)
+                .map(ProductGetPostDTO.ColorDTO::getId)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
 
@@ -292,7 +271,7 @@ public class ProductRepository implements PanacheRepository<Product> {
             }
         }
 
-        for (ProductPricesDTO.ColorDTO colorDTO : colorDTOs) {
+        for (ProductGetPostDTO.ColorDTO colorDTO : colorDTOs) {
             if (colorDTO.getId() == null) {
                 addNewColor(product, colorDTO, colorsToAdd);
             }
@@ -303,11 +282,16 @@ public class ProductRepository implements PanacheRepository<Product> {
         }
         for (ProductColor colorToAdd : colorsToAdd) {
             colorToAdd.persist();
+            Map<String, Long> colorMap = new HashMap<>();
+            colorMap.put("colorId", colorToAdd.getColor().getId()); 
+            colorMap.put("id", colorToAdd.getId()); 
+            newColorMapping.add(colorMap);
         }
+        return newColorMapping; 
     }
 
-    private void updateExistingColor(ProductColor color, List<ProductPricesDTO.ColorDTO> colorDTOs) {
-        ProductPricesDTO.ColorDTO matchingDTO = colorDTOs.stream()
+    private void updateExistingColor(ProductColor color, List<ProductGetPostDTO.ColorDTO> colorDTOs) {
+        ProductGetPostDTO.ColorDTO matchingDTO = colorDTOs.stream()
                 .filter(dto -> dto.getId().equals(color.getId()))
                 .findFirst()
                 .orElse(null);
@@ -321,11 +305,11 @@ public class ProductRepository implements PanacheRepository<Product> {
         }
     }
 
-    private void updateVariants(ProductColor color, List<ProductPricesDTO.ColorDTO.VariantDTO> variantDTOs) {
+    private void updateVariants(ProductColor color, List<ProductGetPostDTO.ColorDTO.VariantDTO> variantDTOs) {
         List<ProductVariant> variantsToDelete = new ArrayList<>();
         List<ProductVariant> variantsToAdd = new ArrayList<>();
         Set<Long> dtoVariantIds = variantDTOs.stream()
-                .map(ProductPricesDTO.ColorDTO.VariantDTO::getId)
+                .map(ProductGetPostDTO.ColorDTO.VariantDTO::getId)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
 
@@ -337,7 +321,7 @@ public class ProductRepository implements PanacheRepository<Product> {
             }
         }
 
-        for (ProductPricesDTO.ColorDTO.VariantDTO variantDTO : variantDTOs) {
+        for (ProductGetPostDTO.ColorDTO.VariantDTO variantDTO : variantDTOs) {
             if (variantDTO.getId() == null) {
                 addNewVariant(color, variantDTO, variantsToAdd);
             }
@@ -351,8 +335,8 @@ public class ProductRepository implements PanacheRepository<Product> {
         }
     }
 
-    private void updateExistingVariant(ProductVariant variant, List<ProductPricesDTO.ColorDTO.VariantDTO> variantDTOs) {
-        ProductPricesDTO.ColorDTO.VariantDTO matchingDTO = variantDTOs.stream()
+    private void updateExistingVariant(ProductVariant variant, List<ProductGetPostDTO.ColorDTO.VariantDTO> variantDTOs) {
+        ProductGetPostDTO.ColorDTO.VariantDTO matchingDTO = variantDTOs.stream()
                 .filter(dto -> dto.getId().equals(variant.getId()))
                 .findFirst()
                 .orElse(null);
@@ -363,7 +347,7 @@ public class ProductRepository implements PanacheRepository<Product> {
         }
     }
 
-    private void addNewColor(Product product, ProductPricesDTO.ColorDTO colorDTO, List<ProductColor> colorsToAdd) {
+    private void addNewColor(Product product, ProductGetPostDTO.ColorDTO colorDTO, List<ProductColor> colorsToAdd) {
         ProductColor newColor = new ProductColor();
         newColor.setMainImage(colorDTO.getMainImage());
         newColor.setImages(colorDTO.getImages());
@@ -375,19 +359,23 @@ public class ProductRepository implements PanacheRepository<Product> {
             throw new IllegalArgumentException("Invalid color ID: " + colorDTO.getColor());
         }
         newColor.setColor(colorEntity);
-
-        if (newColor.getVariants() == null) {
-            newColor.setVariants(new ArrayList<>());
+        newColor.persist();
+        
+    if (colorDTO.getVariants() != null) {
+        for (ProductGetPostDTO.ColorDTO.VariantDTO variantDTO : colorDTO.getVariants()) {
+            ProductVariant newVariant = new ProductVariant();
+            newVariant.setSize(ProductSize.findById(variantDTO.getSizeId()));
+            newVariant.setQuantity(variantDTO.getQuantity());
+            newVariant.setColor(newColor);
+            newVariant.setProduct(product);
+            newVariant.persist();
         }
-
-        for (ProductPricesDTO.ColorDTO.VariantDTO variantDTO : colorDTO.getVariants()) {
-            addNewVariant(newColor, variantDTO, newColor.getVariants());
-        }
-
-        colorsToAdd.add(newColor);
     }
 
-    private void addNewVariant(ProductColor color, ProductPricesDTO.ColorDTO.VariantDTO variantDTO,
+    colorsToAdd.add(newColor); 
+    }
+
+    private void addNewVariant(ProductColor color, ProductGetPostDTO.ColorDTO.VariantDTO variantDTO,
             List<ProductVariant> variantsToAdd) {
         if (variantsToAdd == null) {
             variantsToAdd = new ArrayList<>();
