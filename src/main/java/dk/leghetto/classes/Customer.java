@@ -72,13 +72,10 @@ public class Customer extends PanacheEntityBase {
     public Customer() {
     }
 
-    public Customer(String firstName, String lastName, String email, Integer telephone, String address, Integer postalCode, String password, String verificationToken, Boolean verified, String role) {
+    public Customer(String firstName, String lastName, String email, String password, String verificationToken, Boolean verified, String role) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
-        this.telephone = telephone;
-        this.address = address;
-        this.postalCode = postalCode;
         this.newsletter = false;
         this.password = BcryptUtil.bcryptHash(password);
         if (role!=null && role!="user"){

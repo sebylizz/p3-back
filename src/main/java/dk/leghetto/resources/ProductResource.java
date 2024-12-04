@@ -1,16 +1,6 @@
 package dk.leghetto.resources;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.stripe.model.Price;
 import jakarta.annotation.security.RolesAllowed;
 
 import dk.leghetto.classes.Category;
@@ -25,8 +15,6 @@ import dk.leghetto.classes.ProductSize;
 import dk.leghetto.classes.ProductVariant;
 import dk.leghetto.classes.ProductVariantRepository;
 import dk.leghetto.classes.Product;
-import dk.leghetto.classes.Sizes;
-import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;

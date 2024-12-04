@@ -11,7 +11,6 @@ import jakarta.persistence.GenerationType;
 @Entity
 @Table(name = "order_details")
 public class OrderDetails extends PanacheEntityBase {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -38,10 +37,9 @@ public class OrderDetails extends PanacheEntityBase {
     private Long userId;
 
     public OrderDetails() {
-
     }
 
-    public OrderDetails create(String firstName, String lastName, String address, Integer postalCode, Integer phoneNumber, String email) {
+    public OrderDetails create(String firstName, String lastName, String address, Integer postalCode, Integer phoneNumber, String email, Long userId) {
         OrderDetails orderDetails = new OrderDetails();
         orderDetails.firstName = firstName;
         orderDetails.lastName = lastName;
@@ -49,6 +47,7 @@ public class OrderDetails extends PanacheEntityBase {
         orderDetails.postalCode = postalCode;
         orderDetails.phoneNumber = phoneNumber;
         orderDetails.email = email;
+        orderDetails.userId = userId;
 
         return orderDetails;
     }
@@ -62,4 +61,5 @@ public class OrderDetails extends PanacheEntityBase {
     public String getEmail() { return email; }
     public Long getUserId() { return userId; }
 
+    public void setUserId(Long userId) { this.userId = userId; }
 }

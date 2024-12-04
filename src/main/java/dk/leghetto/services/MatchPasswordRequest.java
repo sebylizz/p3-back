@@ -3,7 +3,6 @@ package dk.leghetto.services;
 public class MatchPasswordRequest {
     private String password;
 
-    // Getters and Setters
     public String getPassword() {
         return password;
     }
@@ -12,4 +11,3 @@ public class MatchPasswordRequest {
         this.password = password;
     }
 }
-

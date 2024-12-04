@@ -42,6 +42,9 @@ public class LoginResource {
     @Inject
     MailService mailService;
 
+    @Inject
+    JsonWebToken jwtWebToken;
+
     @POST
     @Transactional
     @Consumes(MediaType.APPLICATION_JSON)
@@ -143,45 +146,5 @@ public class LoginResource {
         customer.persist();
 
         return Response.ok("Password reset!").build();
-    }
-
-    @Inject
-    JsonWebToken jwtWebToken;
-
-    // Everything below is temporary for dev only
-    @GET
-    @Path("all-allowed")
-    @PermitAll
-    @Produces(MediaType.TEXT_PLAIN)
-    public String allowAll(@Context SecurityContext ctx) {
-        return getResponse(ctx);
-    }
-
-    @GET
-    @Path("users-allowed")
-    @RolesAllowed("user")
-    @Produces(MediaType.TEXT_PLAIN)
-    public String usersAllowed(@Context SecurityContext ctx) {
-        return getResponse(ctx);
-    }
-
-    @GET
-    @Path("admins-allowed")
-    @RolesAllowed("admin")
-    @Produces(MediaType.TEXT_PLAIN)
-    public String adminsAllowed(@Context SecurityContext ctx) {
-        return getResponse(ctx);
-    }
-
-    private String getResponse(SecurityContext ctx) {
-        String name = "anon";
-        if (jwtWebToken.getClaimNames() != null && jwtWebToken.getClaimNames().contains("upn")) {
-            String email = jwtWebToken.getName();
-            Customer customer = customerRepository.findByEmail(email);
-            if (customer != null) {
-                name = customer.getFirstName();
-            }
-        }
-        return String.format("Hi %s", name);
     }
 }

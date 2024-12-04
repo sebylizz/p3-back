@@ -12,13 +12,13 @@ import org.passay.*;
 
 @ApplicationScoped
 public class CustomerRepository implements PanacheRepository<Customer> {
-    public void add(String first_name, String last_name, String email, Integer telephone, String address, Integer postalCode, String password, String verificationToken, Boolean verified) {
-        Customer p = new Customer(first_name, last_name, email, telephone, address, postalCode, password, verificationToken, verified, null);
+    public void add(String first_name, String last_name, String email, String password, String verificationToken, Boolean verified) {
+        Customer p = new Customer(first_name, last_name, email, password, verificationToken, verified, null);
         persist(p);
     }
 
-    public void addAdmin(String first_name, String last_name, String email, Integer telephone, String address, Integer postalCode, String password, String role) {
-        Customer p = new Customer(first_name, last_name, email, telephone, address, postalCode, password,null, true, role);
+    public void addAdmin(String first_name, String last_name, String email, String password, String role) {
+        Customer p = new Customer(first_name, last_name, email, password, null, true, role);
         persist(p);
     }
 

@@ -38,7 +38,4 @@ public class SizesResources {
         size.persist();
         return Response.status(Response.Status.CREATED).entity(size).build();
     }
-
-
-
 }
