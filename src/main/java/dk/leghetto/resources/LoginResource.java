@@ -60,7 +60,7 @@ public class LoginResource {
         if (customer != null && BcryptUtil.matches(password, customer.getPasswordHash())) {
             String token = tokenService.generateToken(email);
 
-            return Response.ok().header("Set-Cookie", "token="+token).build();
+            return Response.ok().header("Set-Cookie", "token=" + token).build();
         }
         return Response.status(Response.Status.UNAUTHORIZED).entity("Invalid email or password").build();
     }
@@ -70,7 +70,8 @@ public class LoginResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response logout() {
-            return Response.ok().header("Set-Cookie", "token=; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Max-Age=0; Path=/;").build();
+        return Response.ok().header("Set-Cookie", "token=; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Max-Age=0; Path=/;")
+                .build();
     }
 
     @POST
@@ -134,7 +135,8 @@ public class LoginResource {
                     .build();
         }
 
-        if (customer.getResetPasswordTokenExpiration() == null || customer.getResetPasswordTokenExpiration().isBefore(LocalDateTime.now())) {
+        if (customer.getResetPasswordTokenExpiration() == null
+                || customer.getResetPasswordTokenExpiration().isBefore(LocalDateTime.now())) {
             return Response.status(Response.Status.NOT_FOUND)
                     .entity("Reset token has expired")
                     .build();

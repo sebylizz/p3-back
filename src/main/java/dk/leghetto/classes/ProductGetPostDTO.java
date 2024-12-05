@@ -3,7 +3,8 @@ package dk.leghetto.classes;
 import java.time.LocalDate;
 import java.util.List;
 
-public class ProductPricesDTO {
+
+public class ProductGetPostDTO {
     private Long id;
     private String name;
     private String description;
@@ -14,7 +15,7 @@ public class ProductPricesDTO {
     private List<ColorDTO> colors;
     private List<PriceDTO> prices; 
 
-    public ProductPricesDTO() {
+    public ProductGetPostDTO() {
     }
 
     public Long getId() {

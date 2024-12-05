@@ -39,7 +39,8 @@ public class OrderDetails extends PanacheEntityBase {
     public OrderDetails() {
     }
 
-    public OrderDetails create(String firstName, String lastName, String address, Integer postalCode, Integer phoneNumber, String email, Long userId) {
+    public OrderDetails create(String firstName, String lastName, String address, Integer postalCode,
+            Integer phoneNumber, String email, Long userId) {
         OrderDetails orderDetails = new OrderDetails();
         orderDetails.firstName = firstName;
         orderDetails.lastName = lastName;
@@ -52,14 +53,39 @@ public class OrderDetails extends PanacheEntityBase {
         return orderDetails;
     }
 
-    public Long getId() { return id; }
-    public String getFirstName() { return firstName; }
-    public String getLastName() { return lastName; }
-    public String getAddress() { return address; }
-    public Integer getPostalCode() { return postalCode; }
-    public Integer getPhoneNumber() { return phoneNumber; }
-    public String getEmail() { return email; }
-    public Long getUserId() { return userId; }
+    public Long getId() {
+        return id;
+    }
 
-    public void setUserId(Long userId) { this.userId = userId; }
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public Integer getPostalCode() {
+        return postalCode;
+    }
+
+    public Integer getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
 }
