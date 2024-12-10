@@ -110,11 +110,11 @@ public class PaymentResource {
                         throw new Exception("No more product left");
                     }
                     if (currentQuantity == 5) {
-                        mailService.sendMail("ekkr", "Low stock",
+                        mailService.sendMail("leghetto.lsh@gmail.com", "Low stock",
                                 "Dette produkt er i low stock: " + pv.getProduct().getName());
                     }
                     if (currentQuantity == 1) {
-                        mailService.sendMail("ekkr", "Out of stock",
+                        mailService.sendMail("leghetto.lsh@gmail.com", "Out of stock",
                                 "Dette produkt er udsolgt: " + pv.getProduct().getName());
                     }
                     pv.setQuantity(currentQuantity - quantity);
@@ -138,7 +138,10 @@ public class PaymentResource {
                     + "Ordre indhold:\n\n"
                     + lineItemCollection + "\n\n";
 
-            mailService.sendMail("ekkr", "Ny ordre", body);
+            mailService.sendMail("leghetto.lsh@gmail.com", "Ny ordre", body);
+
+            mailService.sendMail(details.get("email"), "Order confirmation",
+                    "Tak for din ordre hos Leghetto. Du har bestilt: " + lineItemCollection);
 
             return Response.ok(details).build();
         } catch (Exception e) {
