@@ -88,82 +88,7 @@ public class ProductRepository implements PanacheRepository<Product> {
                 .collect(Collectors.toList());
     }
 
-    @Transactional
-    public Map<String, Object> addProduct(ProductGetPostDTO request) throws Exception {
-        Category category = Category.findById(request.getCategoryId());
-        if (category == null) {
-            throw new IllegalArgumentException("Invalid category ID: " + request.getCategoryId());
-        }
-
-        Collection collection = Collection.findById(request.getCollectionId());
-        if (collection == null) {
-            throw new IllegalArgumentException("Invalid collection ID: " + request.getCollectionId());
-        }
-
-        Product product = new Product();
-        product.setName(request.getName());
-        product.setDescription(request.getDescription());
-        product.setIsActive(request.getIsActive());
-        product.setCategory(category);
-        product.setCollection(collection);
-        product.persist();
-
-        List<Long> newColorIds = new ArrayList<>();
-
-        for (ProductGetPostDTO.ColorDTO colorDTO : request.getColors()) {
-            Colors color = Colors.findById(colorDTO.getColor());
-            if (color == null) {
-                throw new IllegalArgumentException("Invalid color ID: " + colorDTO.getColor());
-            }
-
-            ProductColor productColor = new ProductColor();
-            productColor.setProduct(product);
-            productColor.setColor(color);
-            productColor.setMainImage(colorDTO.getMainImage());
-            productColor.setImages(colorDTO.getImages());
-            productColor.persist();
-
-            newColorIds.add(productColor.getId());
-        }
-
-        if (request.getPrices() == null || request.getPrices().isEmpty()) {
-            throw new IllegalArgumentException("At least one price must be provided.");
-        }
-
-        ProductGetPostDTO.PriceDTO priceDTO = request.getPrices().get(0);
-        ProductPrice productPrice = new ProductPrice();
-        productPrice.setProduct(product);
-        productPrice.setPrice(priceDTO.getPrice());
-        productPrice.setIsDiscount(priceDTO.isDiscount());
-        productPrice.setStartDate(priceDTO.getStartDate());
-        productPrice.setEndDate(priceDTO.getEndDate());
-        productPrice.persist();
-
-        for (ProductGetPostDTO.ColorDTO colorDTO : request.getColors()) {
-            ProductColor productColor = ProductColor.find("product = ?1 and color.id = ?2",
-                    product, colorDTO.getColor()).firstResult();
-
-            if (productColor == null) {
-                throw new IllegalArgumentException("Invalid color ID for variant: " + colorDTO.getColor());
-            }
-
-            for (ProductGetPostDTO.ColorDTO.VariantDTO variantDTO : colorDTO.getVariants()) {
-                ProductSize size = ProductSize.findById(variantDTO.getSizeId());
-                if (size == null) {
-                    throw new IllegalArgumentException("Invalid size ID for variant: " + variantDTO.getSizeId());
-                }
-
-                ProductVariant productVariant = new ProductVariant();
-                productVariant.setProduct(product);
-                productVariant.setColor(productColor);
-                productVariant.setSize(size);
-                productVariant.setQuantity(variantDTO.getQuantity());
-                productVariant.persist();
-            }
-        }
-
-        return Map.of("productId", product.getId(), "colorIds", newColorIds);
-    }
+    
 
     public ProductGetPostDTO getProductWithPricesById(Long productId) {
 
@@ -226,6 +151,42 @@ public class ProductRepository implements PanacheRepository<Product> {
 
         return productDTO;
     }
+    @Transactional
+    public List<Map<String, Long>> addOrUpdateProduct(Long productId, ProductGetPostDTO request) throws Exception {
+        Product product = (productId != null) ? Product.findById(productId) : new Product();
+
+        if (productId != null && product == null) {
+            throw new IllegalArgumentException("Product not found with ID: " + productId);
+        }
+
+        Category category = Category.findById(request.getCategoryId());
+        if (category == null) {
+            throw new IllegalArgumentException("Invalid category ID: " + request.getCategoryId());
+        }
+
+        Collection collection = Collection.findById(request.getCollectionId());
+        if (collection == null) {
+            throw new IllegalArgumentException("Invalid collection ID: " + request.getCollectionId());
+        }
+
+        product.setName(request.getName());
+        product.setDescription(request.getDescription());
+        product.setIsActive(request.getIsActive());
+        product.setCategory(category);
+        product.setCollection(collection);
+
+        if (productId == null) {
+            product.persist();
+        }
+
+        validateAndUpdatePrices(product, request.getPrices());
+        List<Map<String, Long>> newColorMapping = updateColorsAndVariants(product, request.getColors());
+
+        product.persist();
+
+        return newColorMapping;
+    }
+
 
     public void updateBasicDetails(Product product, ProductGetPostDTO productDTO) {
         product.setName(productDTO.getName());

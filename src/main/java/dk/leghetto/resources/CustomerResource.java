@@ -88,21 +88,24 @@ public class CustomerResource {
     @Transactional
     public Response deleteCustomer(@PathParam("id") Long id) {
         try {
+            if(id==0){
+                return Response.status(Response.Status.FORBIDDEN)
+                    .entity("Cannot delete this user.")
+                    .build();
+            }
             int updatedRows = OrderDetails.update("userId = 0 where userId = ?1", id);
             System.out.println("Updated orders: " + updatedRows);
-
             boolean deleted = customerRepository.deleteById(id);
             if (!deleted) {
                 return Response.status(Response.Status.NOT_FOUND)
                         .entity("Customer not found with ID: " + id)
                         .build();
             }
-
             return Response.noContent().build();
         } catch (Exception e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity("Error deleting customer: " + e.getMessage())
-                    .build();
+                .entity("Error deleting customer: " + e.getMessage())
+                .build();
         }
     }
 
