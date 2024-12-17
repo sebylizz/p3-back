@@ -76,7 +76,7 @@ public class CustomerResource {
 
         return Response.ok(Map.of(
                 "customers", customers,
-                "total", query.count(), // Total number of customers
+                "total", query.count(), 
                 "offset", offset,
                 "limit", limit)).build();
     }
