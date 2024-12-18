@@ -63,20 +63,19 @@ public class ProductResource {
         return Response.ok(pr.getAllProducts()).build();
     }
 
-    @POST
-    @Path("/add")
     @RolesAllowed("admin")
-    @Transactional
+    @Path("/add")
+    @POST
     public Response addProduct(ProductGetPostDTO request) {
         try {
-            List<Map<String, Long>>  result = pr.addOrUpdateProduct(null, request);
+            Map<String, Object> result = pr.addProduct(request);
             return Response.status(Response.Status.CREATED).entity(result).build();
         } catch (IllegalArgumentException e) {
             return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
         } catch (Exception e) {
             e.printStackTrace();
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                .entity("Error adding product: " + e.getMessage()).build();
+                    .entity("Error adding product: " + e.getMessage()).build();
         }
     }
 
@@ -100,23 +99,30 @@ public class ProductResource {
         }
     }
 
+    @RolesAllowed("admin")
     @PUT
     @Path("/updateProduct/{id}")
-    @RolesAllowed("admin")
     @Transactional
     public Response updateProduct(@PathParam("id") Long productId, ProductGetPostDTO productDTO) {
+        Product existingProduct = Product.findById(productId);
+        if (existingProduct == null) {
+            return Response.status(Response.Status.NOT_FOUND).entity("Product not found").build();
+        }
+
+        pr.updateBasicDetails(existingProduct, productDTO);
+        List<Map<String, Long>> newColorMapping;
+
         try {
-            List<Map<String, Long>> result = pr.addOrUpdateProduct(productId, productDTO);
-            return Response.ok(result).build();
+            pr.validateAndUpdatePrices(existingProduct, productDTO.getPrices());
+
+            newColorMapping = pr.updateColorsAndVariants(existingProduct, productDTO.getColors());
         } catch (IllegalArgumentException e) {
             return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                .entity("Error updating product: " + e.getMessage()).build();
         }
+
+        existingProduct.persist();
+
+        return Response.ok(newColorMapping).build();
     }
-
-
 
 }
