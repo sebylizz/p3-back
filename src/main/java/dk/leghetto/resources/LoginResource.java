@@ -17,7 +17,6 @@ import dk.leghetto.classes.Token;
 import dk.leghetto.services.MailService;
 import dk.leghetto.services.TokenService;
 import io.quarkus.elytron.security.common.BcryptUtil;
-import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -26,10 +25,8 @@ import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.SecurityContext;
 
 @Path("/login")
 public class LoginResource {

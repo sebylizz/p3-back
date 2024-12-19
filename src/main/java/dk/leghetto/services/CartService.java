@@ -15,7 +15,8 @@ public class CartService {
         Cart c = new Cart();
         for (String i : s) {
             ProductVariantDTO p = pvr.getDTO(Long.parseLong(i.split("/")[2]));
-            c.addProduct(p);
+            if(p != null)
+                c.addProduct(p);
         }
 
         return c;

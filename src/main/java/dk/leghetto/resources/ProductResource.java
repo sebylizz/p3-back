@@ -1,20 +1,11 @@
 package dk.leghetto.resources;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import jakarta.annotation.security.RolesAllowed;
 
-import dk.leghetto.classes.Category;
-import dk.leghetto.classes.Collection;
-import dk.leghetto.classes.Colors;
-import dk.leghetto.classes.ProductColor;
-import dk.leghetto.classes.ProductPrice;
 import dk.leghetto.classes.ProductGetPostDTO;
 import dk.leghetto.classes.ProductRepository;
-import dk.leghetto.classes.ProductAdminDTO;
-import dk.leghetto.classes.ProductSize;
-import dk.leghetto.classes.ProductVariant;
 import dk.leghetto.classes.ProductVariantRepository;
 import dk.leghetto.classes.Product;
 import jakarta.inject.Inject;
