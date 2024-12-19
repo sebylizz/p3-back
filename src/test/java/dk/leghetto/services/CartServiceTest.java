@@ -18,7 +18,6 @@ import dk.leghetto.classes.ProductVariantDTO;
 import dk.leghetto.classes.ProductVariantRepository;
 
 class CartServiceTest {
-
     @Mock
     private ProductVariantRepository pvr;
 
@@ -32,7 +31,7 @@ class CartServiceTest {
 
     @Test
     void testCartFromStrings_ValidData() {
-        String[] productIds = {"000/123/456", "cart/789/101"};
+        String[] productIds = {"000/123/456", "000/789/101"};
 
         ProductVariantDTO product1 = new ProductVariantDTO();
         product1.setId(456L);

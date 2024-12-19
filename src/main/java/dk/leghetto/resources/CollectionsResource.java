@@ -39,7 +39,4 @@ public class CollectionsResource {
         collection.persist();
         return Response.status(Response.Status.CREATED).entity(collection).build();
     }
-
-
-
 }

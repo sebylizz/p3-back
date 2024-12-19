@@ -88,8 +88,7 @@ public class CustomerResource {
     @Transactional
     public Response deleteCustomer(@PathParam("id") Long id) {
         try {
-            int updatedRows = OrderDetails.update("userId = 0 where userId = ?1", id);
-            System.out.println("Updated orders: " + updatedRows);
+            OrderDetails.update("userId = 0 where userId = ?1", id);
 
             boolean deleted = customerRepository.deleteById(id);
             if (!deleted) {
