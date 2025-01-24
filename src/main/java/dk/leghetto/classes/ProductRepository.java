@@ -134,7 +134,7 @@ public class ProductRepository implements PanacheRepository<Product> {
         ProductPrice productPrice = new ProductPrice();
         productPrice.setProduct(product);
         productPrice.setPrice(priceDTO.getPrice());
-        productPrice.setIsDiscount(priceDTO.isDiscount());
+        productPrice.setIsDiscount(priceDTO.getIsDiscount());
         productPrice.setStartDate(priceDTO.getStartDate());
         productPrice.setEndDate(priceDTO.getEndDate());
         productPrice.persist();
@@ -218,7 +218,7 @@ public class ProductRepository implements PanacheRepository<Product> {
                     ProductGetPostDTO.PriceDTO priceDTO = new ProductGetPostDTO.PriceDTO();
                     priceDTO.setId(price.getId());
                     priceDTO.setPrice(price.getPrice());
-                    priceDTO.setDiscount(price.getIsDiscount());
+                    priceDTO.setIsDiscount(price.getIsDiscount());
                     priceDTO.setStartDate(price.getStartDate());
                     priceDTO.setEndDate(price.getEndDate());
                     return priceDTO;
@@ -268,7 +268,7 @@ public class ProductRepository implements PanacheRepository<Product> {
                 if (matchingDTO != null) {
                     validatePriceDates(matchingDTO.getStartDate(), matchingDTO.getEndDate());
                     existingPrice.setPrice(matchingDTO.getPrice());
-                    existingPrice.setIsDiscount(matchingDTO.isDiscount());
+                    existingPrice.setIsDiscount(matchingDTO.getIsDiscount());
                     existingPrice.setStartDate(matchingDTO.getStartDate());
                     existingPrice.setEndDate(matchingDTO.getEndDate());
                 }
@@ -283,7 +283,7 @@ public class ProductRepository implements PanacheRepository<Product> {
 
         for (ProductGetPostDTO.PriceDTO priceDTO : pricesToAdd) {
             validatePriceDates(priceDTO.getStartDate(), priceDTO.getEndDate());
-            if (!priceDTO.isDiscount()) {
+            if (!priceDTO.getIsDiscount()) {
                 handleNonDiscountPrice(existingPrices, priceDTO);
             }
             addNewPrice(product, priceDTO);
@@ -309,7 +309,7 @@ public class ProductRepository implements PanacheRepository<Product> {
     private void addNewPrice(Product product, ProductGetPostDTO.PriceDTO priceDTO) {
         ProductPrice newPrice = new ProductPrice();
         newPrice.setPrice(priceDTO.getPrice());
-        newPrice.setIsDiscount(priceDTO.isDiscount());
+        newPrice.setIsDiscount(priceDTO.getIsDiscount());
         newPrice.setStartDate(priceDTO.getStartDate());
         newPrice.setEndDate(priceDTO.getEndDate());
         newPrice.setProduct(product);
