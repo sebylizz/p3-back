@@ -209,48 +209,48 @@ public class ProductGetPostDTO {
         private boolean isDiscount;
         private LocalDate startDate;
         private LocalDate endDate;
-
-        public PriceDTO() {
-        }
-
+    
+        public PriceDTO() {}
+    
         public Long getId() {
             return id;
         }
-
+    
         public void setId(Long id) {
             this.id = id;
         }
-
+    
         public Long getPrice() {
             return price;
         }
-
+    
         public void setPrice(Long price) {
             this.price = price;
         }
-
-        public boolean isDiscount() {
+    
+        public boolean getIsDiscount() {
             return isDiscount;
         }
-
-        public void setDiscount(boolean discount) {
-            isDiscount = discount;
+    
+        public void setIsDiscount(boolean isDiscount) { 
+            this.isDiscount = isDiscount;
         }
-
+    
         public LocalDate getStartDate() {
             return startDate;
         }
-
+    
         public void setStartDate(LocalDate startDate) {
             this.startDate = startDate;
         }
-
+    
         public LocalDate getEndDate() {
             return endDate;
         }
-
+    
         public void setEndDate(LocalDate endDate) {
             this.endDate = endDate;
         }
     }
+    
 }
