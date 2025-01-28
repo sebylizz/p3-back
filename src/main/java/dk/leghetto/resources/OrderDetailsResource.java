@@ -46,7 +46,7 @@ public class OrderDetailsResource {
                     .map(item -> new OrderItemDTO(
                             item.getProductVariant().getProduct().getName(),
                             item.getProductVariant().getSize().getName(),
-                            item.getProductVariant().getColor().getName(),
+                            item.getProductVariant().getColor().toString(),
                             item.getPrice()
                     ))
                     .collect(Collectors.toList());

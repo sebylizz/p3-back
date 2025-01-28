@@ -5,12 +5,15 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.persistence.Id;
 import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Column;
 import jakarta.persistence.GenerationType;
+import jakarta.persistence.Column;
+import jakarta.persistence.OneToMany;
+import java.util.List;
 
 @Entity
 @Table(name = "order_details")
 public class OrderDetails extends PanacheEntityBase {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -36,22 +39,26 @@ public class OrderDetails extends PanacheEntityBase {
     @Column(name = "user_id")
     private Long userId;
 
-    public OrderDetails() {
-    }
+    @OneToMany(mappedBy = "orderDetails") 
+    private List<OrderItems> orderItems;
 
-    public OrderDetails create(String firstName, String lastName, String address, Integer postalCode,
-            Integer phoneNumber, String email, Long userId) {
-        OrderDetails orderDetails = new OrderDetails();
-        orderDetails.firstName = firstName;
-        orderDetails.lastName = lastName;
-        orderDetails.address = address;
-        orderDetails.postalCode = postalCode;
-        orderDetails.phoneNumber = phoneNumber;
-        orderDetails.email = email;
-        orderDetails.userId = userId;
+    public OrderDetails() {}
 
-        return orderDetails;
-    }
+        // Constructor to initialize fields
+        public OrderDetails(String firstName, String lastName, String address, Integer postalCode, Integer phoneNumber, String email, Long userId) {
+            this.firstName = firstName;
+            this.lastName = lastName;
+            this.address = address;
+            this.postalCode = postalCode;
+            this.phoneNumber = phoneNumber;
+            this.email = email;
+            this.userId = userId;
+        }
+    
+        // Factory method to create an instance
+        public static OrderDetails create(String firstName, String lastName, String address, Integer postalCode, Integer phoneNumber, String email, Long userId) {
+            return new OrderDetails(firstName, lastName, address, postalCode, phoneNumber, email, userId);
+        }
 
     public Long getId() {
         return id;
@@ -85,7 +92,17 @@ public class OrderDetails extends PanacheEntityBase {
         return userId;
     }
 
+    public List<OrderItems> getOrderItems() {
+        return orderItems;
+    }
+
+    public void setOrderItems(List<OrderItems> orderItems) {
+        this.orderItems = orderItems;
+    }
+
     public void setUserId(Long userId) {
+
         this.userId = userId;
+
     }
 }

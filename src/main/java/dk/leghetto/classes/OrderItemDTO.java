@@ -4,9 +4,9 @@ public class OrderItemDTO {
     private String productName;
     private String size;
     private String color;
-    private Double price;
+    private Long price;
 
-    public OrderItemDTO(String productName, String size, String color, Double price) {
+    public OrderItemDTO(String productName, String size, String color, Long price) {
         this.productName = productName;
         this.size = size;
         this.color = color;
@@ -38,11 +38,11 @@ public class OrderItemDTO {
         this.color = color;
     }
 
-    public Double getPrice() {
+    public Long getPrice() {
         return price;
     }
 
-    public void setPrice(Double price) {
+    public void setPrice(Long price) {
         this.price = price;
     }
 }
