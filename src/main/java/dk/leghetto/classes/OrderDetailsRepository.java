@@ -12,4 +12,8 @@ public class OrderDetailsRepository implements PanacheRepository<OrderDetails> {
         persist(o);
         return o.getId();
     }
+
+    public OrderDetails findByEmail(String email) {
+        return find("email", email).firstResult();
+    }
 }
