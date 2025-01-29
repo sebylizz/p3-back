@@ -2,8 +2,7 @@ package dk.leghetto.resources;
 
 import dk.leghetto.classes.OrderDetails;
 import dk.leghetto.classes.OrderDetailsRepository;
-import dk.leghetto.classes.OrderDTO;
-import dk.leghetto.classes.OrderItemDTO;
+import dk.leghetto.classes.OrderSummaryDTO; // New DTO class
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
@@ -39,26 +38,23 @@ public class OrderDetailsResource {
                     .build();
         }
 
-        // Transform orders into OrderDTOs
-        List<OrderDTO> orderResponse = orders.stream().map(order -> {
-            // Map order items to OrderItemDTOs (assuming order.getOrderItems() returns the items)
-            List<OrderItemDTO> items = order.getOrderItems().stream()
-                    .map(item -> new OrderItemDTO(
-                            item.getProductVariant().getProduct().getName(),
-                            item.getProductVariant().getSize().getName(),
-                            item.getProductVariant().getColor().toString(),
-                            item.getPrice()
-                    ))
-                    .collect(Collectors.toList());
+        // Transform orders into a simpler DTO for the response
+        List<OrderSummaryDTO> orderResponse = orders.stream().map(order -> {
+            // Calculate total price for the order
+            double totalPrice = order.getOrderItems().stream()
+                    .mapToDouble(item -> item.getPrice())
+                    .sum();
 
-            return new OrderDTO(
+            // Concatenate product names
+            String productNames = order.getOrderItems().stream()
+        .filter(item -> item.getProductVariant() != null && item.getProductVariant().getProduct() != null)
+        .map(item -> item.getProductVariant().getProduct().getName())
+        .collect(Collectors.joining(", "));
+
+            return new OrderSummaryDTO(
                     order.getId(),
-                    order.getFirstName() + " " + order.getLastName(),
-                    order.getAddress(),
-                    order.getPostalCode(),
-                    order.getPhoneNumber(),
-                    order.getEmail(),
-                    items
+                    productNames,
+                    totalPrice
             );
         }).collect(Collectors.toList());
 
